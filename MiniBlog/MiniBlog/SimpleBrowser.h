@@ -245,6 +245,9 @@ private:
 };
 class BrowserConcrete:public SimpleBrowser
 {
+protected:
+	BOOL GetSource(IHTMLDocument2 *pDoc2,CString& refString);
+	IDispatch * getElementInCollection(IHTMLElementCollection   *pEltCollection,int   ndx) ;
 
 };
 #endif

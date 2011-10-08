@@ -5,6 +5,13 @@
 #include "SinaBrowserTool.h"
 #include "SQLiteTool.h"
 #include "afxwin.h"
+#include "GridCtrl/GridCtrl.h"
+#include "GridCtrl/GridURLCell.h"
+#include "GridCtrl/GridCellCombo.h"
+#include "GridCtrl/GridCellCheck.h"
+#include "GridCtrl/GridCellNumeric.h"
+#include "GridCtrl/GridCellDateTime.h"
+
 // CMiniBlogDlg dialog
 class CMiniBlogDlg : public CDialogEx
 {
@@ -41,8 +48,11 @@ private:
 private:
 	BOOL Init();
 	BOOL InitUI();
+	BOOL InitGrid();
+	void AddFansToGrid(LPCTSTR lpName,LPCTSTR lpPWD);
 private:
 	SinaBrowserTool *m_pSinaSvr;
 	CSQLiteTool *m_pDB;
+	CGridCtrl  m_Grid;
 
 };

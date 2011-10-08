@@ -1,5 +1,15 @@
 #pragma once
 #include "simplebrowser.h"
+enum ERROR_CODE
+{
+	SINA_OK = 0,
+	SINA_PWD_ERROR,
+	SINA_LOGINING,
+	SINA_NO_WEIBO,
+
+	SINA_NONE
+
+};
 typedef enum tag_MINIBLOG_ACTION
 {
 	ACT_LOGIN_SINA,
@@ -12,7 +22,7 @@ typedef enum tag_MINIBLOG_ACTION
 	ACT_END
 }MINIBLOG_ACTION;
 
-class SinaBrowserTool :	public SimpleBrowser
+class SinaBrowserTool :	public BrowserConcrete
 {
 public:
 	SinaBrowserTool(void);
@@ -37,11 +47,13 @@ public:
 	void Login(LPCTSTR lpUserName,LPCTSTR lpPwd);
 private:
 	MINIBLOG_ACTION GetAction(){return m_CurTask;};
-	HRESULT  CheckLoginStatus();
+	HRESULT  CheckLoginStatus(CString URL);
 public:
 
 private:
 	MINIBLOG_ACTION m_CurTask;
+
+	DWORD          m_ActionStatus;
 
 };
 

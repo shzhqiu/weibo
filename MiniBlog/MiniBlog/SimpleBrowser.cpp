@@ -725,7 +725,7 @@ IHTMLDocument2 *SimpleBrowser::GetDocument()
 
 			// get the actual document interface
 
-			hr = document_dispatch->QueryInterface(IID_IHTMLDocument3,
+			hr = document_dispatch->QueryInterface(IID_IHTMLDocument2,
 			                                       (void **)&document);
 
 			// release dispatch interface
@@ -1121,4 +1121,71 @@ void SimpleBrowser::OnTitleChange(CString text)
 											 (LPARAM)&notification);
 		
 	}
+}
+
+BOOL BrowserConcrete::GetSource(IHTMLDocument2 *pDoc2,CString& refString)
+{
+	CComQIPtr<IHTMLElementCollection> i_Collect;
+	if(pDoc2-> get_all(&i_Collect)==S_OK) 
+	{ 
+		long   l; 
+		i_Collect-> get_length(&l); 
+		CComVariant   v1,v2; 
+		v1=(long)0; 
+		v2=(long)0; 
+		IDispatch*   pDisp; 
+		i_Collect-> item(v1,v2,&pDisp); 
+		CComQIPtr <IHTMLElement,   &IID_IHTMLElement> pHTMLElement(pDisp); 
+		if(pHTMLElement!=NULL) 
+		{ 
+			CComBSTR   str; 
+			pHTMLElement-> get_innerHTML(&str);//ok!!! 
+			refString = str;
+		} 
+	}
+
+	return 1;
+}
+
+IDispatch * BrowserConcrete::getElementInCollection(IHTMLElementCollection   *pEltCollection,int   ndx) 
+{ 
+	VARIANT   variant,emptyVariant; 
+	IDispatch   *pIDispatch; 
+
+	VariantInit(&variant); 
+	VariantInit(&emptyVariant); 
+
+	variant.vt   =   VT_I2; 
+	variant.iVal   =   ndx;
+
+	pEltCollection-> item(variant,emptyVariant,&pIDispatch); 
+
+	if   (pIDispatch   ==   NULL) 
+	{ 
+		//		ShowMessage( "Unable   to   find   element   "   +   String(ndx)   +   "in   collection "); 
+	} 
+
+	return   pIDispatch; 
+} 
+
+void GetScript()
+{
+			/*
+		CString strHTML;
+		GetSource(pDoc2,strHTML);
+
+		//CComQIPtr<IHTMLElementCollection> i_Collect;
+		pDoc2->get_scripts(&i_Collect);
+		i_Collect->get_length(&ul);
+		CComQIPtr<IHTMLScriptElement> iScript;
+		wchar_t   *ElementSrcText; 
+
+		for (long i=0;i<ul;i++){
+			i_Dispath   =   getElementInCollection(i_Collect,i);
+			i_Dispath-> QueryInterface(IID_IHTMLScriptElement,(void   **)&iScript); 
+
+			iScript-> get_src(&ElementSrcText); 
+
+		}
+		*/
 }

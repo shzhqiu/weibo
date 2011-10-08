@@ -19,6 +19,9 @@
     <Filter Include="sqlite">
       <UniqueIdentifier>{e1432ef1-e47e-4956-88a8-4bb6fbd3d986}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GridCtrl">
+      <UniqueIdentifier>{be7e3c7f-0a97-40af-b6b3-eed525967076}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
@@ -57,6 +60,45 @@
     <ClInclude Include="SinaBrowserTool.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="GridCtrl\TitleTip.h">
+      <Filter>GridCtrl</Filter>
+    </ClInclude>
+    <ClInclude Include="GridCtrl\CellRange.h">
+      <Filter>GridCtrl</Filter>
+    </ClInclude>
+    <ClInclude Include="GridCtrl\GridCell.h">
+      <Filter>GridCtrl</Filter>
+    </ClInclude>
+    <ClInclude Include="GridCtrl\GridCellBase.h">
+      <Filter>GridCtrl</Filter>
+    </ClInclude>
+    <ClInclude Include="GridCtrl\GridCellCheck.h">
+      <Filter>GridCtrl</Filter>
+    </ClInclude>
+    <ClInclude Include="GridCtrl\GridCellCombo.h">
+      <Filter>GridCtrl</Filter>
+    </ClInclude>
+    <ClInclude Include="GridCtrl\GridCellDateTime.h">
+      <Filter>GridCtrl</Filter>
+    </ClInclude>
+    <ClInclude Include="GridCtrl\GridCellNumeric.h">
+      <Filter>GridCtrl</Filter>
+    </ClInclude>
+    <ClInclude Include="GridCtrl\GridCtrl.h">
+      <Filter>GridCtrl</Filter>
+    </ClInclude>
+    <ClInclude Include="GridCtrl\GridDropTarget.h">
+      <Filter>GridCtrl</Filter>
+    </ClInclude>
+    <ClInclude Include="GridCtrl\GridURLCell.h">
+      <Filter>GridCtrl</Filter>
+    </ClInclude>
+    <ClInclude Include="GridCtrl\InPlaceEdit.h">
+      <Filter>GridCtrl</Filter>
+    </ClInclude>
+    <ClInclude Include="GridCtrl\MemDC.h">
+      <Filter>GridCtrl</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MiniBlog.cpp">
@@ -79,6 +121,39 @@
     </ClCompile>
     <ClCompile Include="SinaBrowserTool.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GridCtrl\GridCell.cpp">
+      <Filter>GridCtrl</Filter>
+    </ClCompile>
+    <ClCompile Include="GridCtrl\GridCellBase.cpp">
+      <Filter>GridCtrl</Filter>
+    </ClCompile>
+    <ClCompile Include="GridCtrl\GridCellCheck.cpp">
+      <Filter>GridCtrl</Filter>
+    </ClCompile>
+    <ClCompile Include="GridCtrl\GridCellCombo.cpp">
+      <Filter>GridCtrl</Filter>
+    </ClCompile>
+    <ClCompile Include="GridCtrl\GridCellDateTime.cpp">
+      <Filter>GridCtrl</Filter>
+    </ClCompile>
+    <ClCompile Include="GridCtrl\GridCellNumeric.cpp">
+      <Filter>GridCtrl</Filter>
+    </ClCompile>
+    <ClCompile Include="GridCtrl\GridCtrl.cpp">
+      <Filter>GridCtrl</Filter>
+    </ClCompile>
+    <ClCompile Include="GridCtrl\GridDropTarget.cpp">
+      <Filter>GridCtrl</Filter>
+    </ClCompile>
+    <ClCompile Include="GridCtrl\GridURLCell.cpp">
+      <Filter>GridCtrl</Filter>
+    </ClCompile>
+    <ClCompile Include="GridCtrl\InPlaceEdit.cpp">
+      <Filter>GridCtrl</Filter>
+    </ClCompile>
+    <ClCompile Include="GridCtrl\TitleTip.cpp">
+      <Filter>GridCtrl</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

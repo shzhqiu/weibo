@@ -99,6 +99,19 @@
     <None Include="res\MiniBlog.rc2" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="GridCtrl\CellRange.h" />
+    <ClInclude Include="GridCtrl\GridCell.h" />
+    <ClInclude Include="GridCtrl\GridCellBase.h" />
+    <ClInclude Include="GridCtrl\GridCellCheck.h" />
+    <ClInclude Include="GridCtrl\GridCellCombo.h" />
+    <ClInclude Include="GridCtrl\GridCellDateTime.h" />
+    <ClInclude Include="GridCtrl\GridCellNumeric.h" />
+    <ClInclude Include="GridCtrl\GridCtrl.h" />
+    <ClInclude Include="GridCtrl\GridDropTarget.h" />
+    <ClInclude Include="GridCtrl\GridURLCell.h" />
+    <ClInclude Include="GridCtrl\InPlaceEdit.h" />
+    <ClInclude Include="GridCtrl\MemDC.h" />
+    <ClInclude Include="GridCtrl\TitleTip.h" />
     <ClInclude Include="MiniBlog.h" />
     <ClInclude Include="MiniBlogDlg.h" />
     <ClInclude Include="Resource.h" />
@@ -110,6 +123,17 @@
     <ClInclude Include="WininetHook.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="GridCtrl\GridCell.cpp" />
+    <ClCompile Include="GridCtrl\GridCellBase.cpp" />
+    <ClCompile Include="GridCtrl\GridCellCheck.cpp" />
+    <ClCompile Include="GridCtrl\GridCellCombo.cpp" />
+    <ClCompile Include="GridCtrl\GridCellDateTime.cpp" />
+    <ClCompile Include="GridCtrl\GridCellNumeric.cpp" />
+    <ClCompile Include="GridCtrl\GridCtrl.cpp" />
+    <ClCompile Include="GridCtrl\GridDropTarget.cpp" />
+    <ClCompile Include="GridCtrl\GridURLCell.cpp" />
+    <ClCompile Include="GridCtrl\InPlaceEdit.cpp" />
+    <ClCompile Include="GridCtrl\TitleTip.cpp" />
     <ClCompile Include="MiniBlog.cpp" />
     <ClCompile Include="MiniBlogDlg.cpp" />
     <ClCompile Include="SimpleBrowser.cpp" />

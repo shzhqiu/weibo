@@ -5,6 +5,7 @@
 SinaBrowserTool::SinaBrowserTool(void)
 {
 	m_CurTask = ACT_END;
+	m_ActionStatus = SINA_NONE;
 
 }
 
@@ -27,36 +28,46 @@ bool SinaBrowserTool::OnBeforeNavigate2(CString URL,
 
 	return false;
 }
-HRESULT SinaBrowserTool::CheckLoginStatus()
+
+
+HRESULT SinaBrowserTool::CheckLoginStatus(CString URL)
 {
+	if(m_ActionStatus != SINA_LOGINING)
+		return S_FALSE;
 	/*
-	IHTMLDocument2 *doc2 = GetDocument();
-
-	IPersistFile   *pf   =   NULL; 
-	//   获取了IHTMLDocument2接口以后 
-
-	//   保存网页文档 
-	if(SUCCEEDED(doc2-> QueryInterface(IID_IPersistFile,   (void   **)&pf))) 
-	{ 
-		pf->GetCurFile()
-	} 
-		/*
+	check login pwd
+	//http://login.sina.com.cn/sso/login.php
+	*/
+	long ulen = 0;
+	IHTMLDocument3 *pDoc3 = GetDocument3();
+	HRESULT hr = E_FAIL;
+	if (URL.Find(_T("http://login.sina.com.cn/sso/login.php",0)) >= 0)
+	{
+		CComBSTR strName = _T("retcode");
 		CComQIPtr<IHTMLElementCollection> i_Collect;
-		long u32_Len;
+		CComQIPtr<IDispatch> i_Dispath;
+		CComQIPtr<IHTMLInputElement> iInput;
+		pDoc3->getElementsByName(strName,&i_Collect);
+		i_Collect->get_length(&ulen);
+		for (long i=0;i<ulen;i++){
+			i_Dispath   =   getElementInCollection(i_Collect,i);
+			hr = i_Dispath-> QueryInterface(IID_IHTMLInputElement,(void   **)&iInput); 
+			CComBSTR str;
+			iInput->get_value(&str);
+			m_ActionStatus = SINA_PWD_ERROR;
+			return S_OK;
+			
+		}
+	}
 
-		IHTMLDocument3 *doc3 = GetDocument3();
-		
-		IHTMLDocument2 *doc2 = GetDocument();
-		doc2->get_scripts(&i_Collect);
-		i_Collect->get_length(&u32_Len);
-		CString       s_TagName=_T("retcode"); // IN
-		CComQIPtr<IHTMLElementCollection> i_Collect;
-		CComBSTR bs_TagName = s_TagName;
-		doc3->getElementsByTagName(bs_TagName, &i_Collect);
-		i_Collect->get_length(&u32_Len);
-		u32_Len ++;
-		*/
-
+	//http://weibo.com/signup/full_info.php?uid=2452258262&type=2&r=/2452258262 not regist for weibo.
+	if (URL.Find(_T("http://weibo.com/signup/full_info.php?uid=") >= 0))
+	{
+		m_ActionStatus = SINA_NO_WEIBO;
+		return S_OK;
+	}
+	
+	pDoc3->Release();
 	return S_OK;
 }
 void SinaBrowserTool::OnDocumentComplete(CString URL)
@@ -65,7 +76,7 @@ void SinaBrowserTool::OnDocumentComplete(CString URL)
 
 	if (GetAction() == ACT_LOGIN_SINA)
 	{
-		CheckLoginStatus();
+		CheckLoginStatus(URL);
 		
 	}
 
