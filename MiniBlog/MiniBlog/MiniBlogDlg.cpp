@@ -283,7 +283,9 @@ void CMiniBlogDlg::OnBnClickedButton1Test()
 	char szName[MAX_PATH] = {0};
 	char szPwd[MAX_PATH]  = {0};
 
-	m_pDB->AddFans("name","pwd");
+	//m_pDB->AddFans("name","pwd");
+	m_pSinaSvr->Forward(_T("3366225281064089"),_T("2400232192"),_T("转发微博"));
+	//m_pSinaSvr->Comment(_T("3366225281064089"),_T("2400232192"),_T("这值得顶。"));
 	// TODO: Add your control notification handler code here
 }
 

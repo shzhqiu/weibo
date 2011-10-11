@@ -45,6 +45,10 @@ public:
 	void AddTask(MINIBLOG_ACTION task);
 	void SetAction(MINIBLOG_ACTION act){m_CurTask = act;};
 	void Login(LPCTSTR lpUserName,LPCTSTR lpPwd);
+	void PostWeibo(LPCTSTR lpContent);
+	void Follow(LPCTSTR  lpUID);
+	void Forward(LPCTSTR  lpMid,LPCTSTR lpUID,LPCTSTR lpReason);
+	void Comment(LPCTSTR lpMid,LPCTSTR lpUID,LPCTSTR lpContent);
 private:
 	MINIBLOG_ACTION GetAction(){return m_CurTask;};
 	HRESULT  CheckLoginStatus(CString URL);
@@ -54,6 +58,8 @@ private:
 	MINIBLOG_ACTION m_CurTask;
 
 	DWORD          m_ActionStatus;
+	CString		   m_strCurURL;
+	TCHAR          m_szCurUID[MAX_PATH];
 
 };
 
