@@ -120,6 +120,7 @@
     <ClInclude Include="SQLiteTool.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="TaskMgr.h" />
     <ClInclude Include="WininetHook.h" />
   </ItemGroup>
   <ItemGroup>
@@ -143,6 +144,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="TaskMgr.cpp" />
     <ClCompile Include="WininetHook.cpp" />
   </ItemGroup>
   <ItemGroup>

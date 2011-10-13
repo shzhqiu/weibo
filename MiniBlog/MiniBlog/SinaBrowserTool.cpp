@@ -1,6 +1,6 @@
 #include "StdAfx.h"
 #include "SinaBrowserTool.h"
-
+#include <regex>
 
 SinaBrowserTool::SinaBrowserTool(void)
 {
@@ -134,11 +134,7 @@ void SinaBrowserTool::OnTitleChange(CString text)
 	event.Format(_T("OnTitleChange: text=\"%s\""),text);
 
 }
-// no use now
-void SinaBrowserTool::AddTask(MINIBLOG_ACTION task)
-{
-	return ;
-}
+
 void SinaBrowserTool::Login(LPCTSTR lpUserName,LPCTSTR lpPwd)
 {
 
@@ -262,7 +258,7 @@ void SinaBrowserTool::Comment(LPCTSTR lpMid,LPCTSTR lpUID,LPCTSTR lpContent)
 	TCHAR szMid[MAX_PATH] = _T("3366217727338022");
 	TCHAR szUid[] = _T("2400232192");
 	WCHAR szwPost[1024]={0};
-	TCHAR szContent[] = _T("comment-test");
+	TCHAR szContent[1024] = _T("comment-test");
 	
 	_tcscpy(szMid,lpMid);
 	_tcscpy(szUid,lpUID);
@@ -283,6 +279,7 @@ void SinaBrowserTool::Comment(LPCTSTR lpMid,LPCTSTR lpUID,LPCTSTR lpContent)
 
 	TCHAR szHeader[1024] = {0};
 	_stprintf(szHeader,_T("Accept: */*\r\nContent-Type: application/x-www-form-urlencoded\r\nReferer: http://weibo.com/%s\r\nx-requested-with: XMLHttpRequest"),szUid);
+	//_stprintf(szHeader,_T("Accept: */*\r\nContent-Type: application/x-www-form-urlencoded\r\nx-requested-with: XMLHttpRequest"),szUid);
 
 	TCHAR szURL[1024]=_T("http://weibo.com/aj/comment/add");
 	COleVariant vPostData = arr;
@@ -292,4 +289,18 @@ void SinaBrowserTool::Comment(LPCTSTR lpMid,LPCTSTR lpUID,LPCTSTR lpContent)
 	COleVariant vFlags((long) NULL, VT_I4);
 	Navigate2(vURL, vFlags, vTargetFrameName,vPostData, vHeaders);
 
+}
+HRESULT SinaBrowserTool::ProcessTask(LPTASK_PARAM lpTaskParam)
+{
+	if (lpTaskParam == NULL)
+	{
+		return E_FAIL;
+	}
+	switch(lpTaskParam->dwTaskType)
+	{
+	case ACT_POST_SINA:
+		PostWeibo(lpTaskParam->szContent);
+		break;
+	}
+	return S_FALSE;
 }

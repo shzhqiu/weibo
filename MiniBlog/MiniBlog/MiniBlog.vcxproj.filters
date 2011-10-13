@@ -99,6 +99,9 @@
     <ClInclude Include="GridCtrl\MemDC.h">
       <Filter>GridCtrl</Filter>
     </ClInclude>
+    <ClInclude Include="TaskMgr.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MiniBlog.cpp">
@@ -154,6 +157,9 @@
     </ClCompile>
     <ClCompile Include="GridCtrl\TitleTip.cpp">
       <Filter>GridCtrl</Filter>
+    </ClCompile>
+    <ClCompile Include="TaskMgr.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -8,6 +8,7 @@
 #include "afxdialogex.h"
 #include "SinaBrowserTool.h"
 
+#define  TIMER_AUTO_START WM_USER+2011
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -56,6 +57,8 @@ CMiniBlogDlg::CMiniBlogDlg(CWnd* pParent /*=NULL*/)
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 	m_pDB = new CSQLiteTool();
 	m_pSinaSvr = new SinaBrowserTool();
+	m_pTaskMgr = new CTaskMgr();
+	m_pTaskMgr->SetSvr(m_pSinaSvr);
 }
 
 void CMiniBlogDlg::DoDataExchange(CDataExchange* pDX)
@@ -72,6 +75,8 @@ BEGIN_MESSAGE_MAP(CMiniBlogDlg, CDialogEx)
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDC_BUTTON1_TEST, &CMiniBlogDlg::OnBnClickedButton1Test)
 	ON_BN_CLICKED(IDC_BUTTON_ADD_USER, &CMiniBlogDlg::OnBnClickedButtonAddUser)
+	ON_WM_TIMER()
+	ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
 BOOL CMiniBlogDlg::Init()
@@ -280,12 +285,19 @@ HCURSOR CMiniBlogDlg::OnQueryDragIcon()
 
 void CMiniBlogDlg::OnBnClickedButton1Test()
 {
+	SetTimer(TIMER_AUTO_START,1000*60,NULL);
+	/*
 	char szName[MAX_PATH] = {0};
 	char szPwd[MAX_PATH]  = {0};
-
+	srand(GetTickCount());
+	int rnd = rand();
 	//m_pDB->AddFans("name","pwd");
-	m_pSinaSvr->Forward(_T("3366225281064089"),_T("2400232192"),_T("转发微博"));
-	//m_pSinaSvr->Comment(_T("3366225281064089"),_T("2400232192"),_T("这值得顶。"));
+	TCHAR szPost[1024] = {0};
+	_stprintf(szPost,_T("hello test %d"),rnd);
+	//m_pSinaSvr->PostWeibo(szPost);
+	//m_pSinaSvr->Forward(_T("3366225281064089"),_T("2400232192"),szPost);
+	m_pSinaSvr->Comment(_T("3366225281064089"),_T("2400232192"),szPost);
+	*/
 	// TODO: Add your control notification handler code here
 }
 
@@ -296,8 +308,8 @@ void CMiniBlogDlg::OnBnClickedButtonAddUser()
 	m_Username.GetWindowText(strName);
 	CString strPwd;
 	m_UserPwd.GetWindowText(strPwd);
-	strName = _T("fortestonlya@sina.com");
-	strPwd = _T("fortestonlya");
+	//strName = _T("fortestonlya@sina.com");
+	//strPwd = _T("fortestonlya");
 	strName = _T("shzhqiu@hotmail.com");
 	strPwd = _T("93732717");
 	AddFansToGrid(strName,strPwd);
@@ -345,4 +357,31 @@ void CMiniBlogDlg::AddFansToGrid(LPCTSTR lpName,LPCTSTR lpPWD)
 	}
 	m_Grid.AutoSize();
 
+}
+
+void CMiniBlogDlg::OnTimer(UINT_PTR nIDEvent)
+{
+	// TODO: Add your message handler code here and/or call default
+	switch(nIDEvent)
+	{
+	case TIMER_AUTO_START:
+		m_pTaskMgr->GetTask();
+		break;
+	default:
+		break;
+
+	}
+
+	CDialogEx::OnTimer(nIDEvent);
+}
+
+
+void CMiniBlogDlg::OnDestroy()
+{
+	CDialogEx::OnDestroy();
+	KillTimer(TIMER_AUTO_START);
+	delete m_pTaskMgr;
+	delete m_pDB;
+	delete m_pSinaSvr;
+	// TODO: Add your message handler code here
 }

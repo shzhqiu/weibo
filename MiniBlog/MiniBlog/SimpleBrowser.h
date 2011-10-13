@@ -19,7 +19,23 @@
 #define SimpleBrowser_defined
 
 #include "mshtml.h"
+#include "mshtmdid.h"
+#include "TaskMgr.h"
 
+class dispathhost : public IDispatch
+{
+
+	virtual /* [local] */ HRESULT STDMETHODCALLTYPE Invoke( 
+		/* [in] */ DISPID dispIdMember,
+		/* [in] */ REFIID riid,
+		/* [in] */ LCID lcid,
+		/* [in] */ WORD wFlags,
+		/* [out][in] */ DISPPARAMS *pDispParams,
+		/* [out] */ VARIANT *pVarResult,
+		/* [out] */ EXCEPINFO *pExcepInfo,
+		/* [out] */ UINT *puArgErr);
+
+};
 class SimpleBrowser : public CWnd {
 
 public:
@@ -239,15 +255,16 @@ private:
 
     CWnd                    _BrowserWindow;     // browser window
 	IWebBrowser2			*_Browser;          // browser control
-    IDispatch               *_BrowserDispatch;  // browser control 
+    dispathhost               *_BrowserDispatch;  // browser control 
 												// dispatch interface
 
 };
-class BrowserConcrete:public SimpleBrowser
+class WeiboServiceBase :public SimpleBrowser
 {
 protected:
 	BOOL GetSource(IHTMLDocument2 *pDoc2,CString& refString);
 	IDispatch * getElementInCollection(IHTMLElementCollection   *pEltCollection,int   ndx) ;
-
+public:
+	virtual HRESULT ProcessTask(LPTASK_PARAM lpTaskParam)= 0;
 };
 #endif

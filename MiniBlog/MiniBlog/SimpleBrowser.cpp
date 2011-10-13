@@ -91,8 +91,7 @@ BOOL SimpleBrowser::Create(DWORD dwStyle,
     if (SUCCEEDED(hr)) {
         hr = unknown->QueryInterface(IID_IDispatch,(void **)&_BrowserDispatch);
     }
-
-    if (!SUCCEEDED(hr)) {
+   if (!SUCCEEDED(hr)) {
         _BrowserWindow.DestroyWindow();
         DestroyWindow();
         return FALSE;        
@@ -133,6 +132,10 @@ BOOL SimpleBrowser::Create(DWORD dwStyle,
 		if (document != NULL) {
 			document->Release();	
 		}
+
+		//_Browser->RegisterAsDropTarget(VARIANT_TRUE);
+		_Browser->put_RegisterAsDropTarget(VARIANT_TRUE);
+		//_Browser->Invoke
 
 	}
 
@@ -967,7 +970,7 @@ void SimpleBrowser::OnDocumentComplete(CString URL)
 
 void SimpleBrowser::_OnDownloadBegin()
 {
-    OnDownloadBegin();
+   OnDownloadBegin();
 }
 
 void SimpleBrowser::OnDownloadBegin()
@@ -1123,7 +1126,7 @@ void SimpleBrowser::OnTitleChange(CString text)
 	}
 }
 
-BOOL BrowserConcrete::GetSource(IHTMLDocument2 *pDoc2,CString& refString)
+BOOL WeiboServiceBase::GetSource(IHTMLDocument2 *pDoc2,CString& refString)
 {
 	CComQIPtr<IHTMLElementCollection> i_Collect;
 	if(pDoc2-> get_all(&i_Collect)==S_OK) 
@@ -1147,7 +1150,7 @@ BOOL BrowserConcrete::GetSource(IHTMLDocument2 *pDoc2,CString& refString)
 	return 1;
 }
 
-IDispatch * BrowserConcrete::getElementInCollection(IHTMLElementCollection   *pEltCollection,int   ndx) 
+IDispatch * WeiboServiceBase::getElementInCollection(IHTMLElementCollection   *pEltCollection,int   ndx) 
 { 
 	VARIANT   variant,emptyVariant; 
 	IDispatch   *pIDispatch; 
@@ -1188,4 +1191,34 @@ void GetScript()
 
 		}
 		*/
+}
+ /* [local] */ HRESULT  dispathhost::Invoke( 
+	/* [in] */ DISPID dispIdMember,
+	/* [in] */ REFIID riid,
+	/* [in] */ LCID lcid,
+	/* [in] */ WORD wFlags,
+	/* [out][in] */ DISPPARAMS *pDispParams,
+	/* [out] */ VARIANT *pVarResult,
+	/* [out] */ EXCEPINFO *pExcepInfo,
+	/* [out] */ UINT *puArgErr)
+{
+	switch (dispIdMember)
+
+	{
+
+	case DISPID_AMBIENT_DLCONTROL:
+
+		pVarResult->vt = VT_I4;
+
+		pVarResult->lVal =  DLCTL_SILENT | DLCTL_NO_SCRIPTS;
+
+		break;
+
+	default:
+
+		return DISP_E_MEMBERNOTFOUND;
+
+	}
+
+	return S_OK;
 }

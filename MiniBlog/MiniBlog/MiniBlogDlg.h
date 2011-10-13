@@ -11,6 +11,8 @@
 #include "GridCtrl/GridCellCheck.h"
 #include "GridCtrl/GridCellNumeric.h"
 #include "GridCtrl/GridCellDateTime.h"
+#include "TaskMgr.h"
+
 
 // CMiniBlogDlg dialog
 class CMiniBlogDlg : public CDialogEx
@@ -37,6 +39,8 @@ protected:
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
 
+public:
+	void GetTask();
 
 public:
 	afx_msg void OnBnClickedButton1Test();
@@ -52,7 +56,13 @@ private:
 	void AddFansToGrid(LPCTSTR lpName,LPCTSTR lpPWD);
 private:
 	SinaBrowserTool *m_pSinaSvr;
+	CTaskMgr     *m_pTaskMgr;
 	CSQLiteTool *m_pDB;
 	CGridCtrl  m_Grid;
+	TASK_PARAM  m_TaskParam;
 
+
+public:
+	afx_msg void OnTimer(UINT_PTR nIDEvent);
+	afx_msg void OnDestroy();
 };

@@ -207,7 +207,7 @@ NTSTATUS WINAPI CWininetHook::_LdrLoadDll(IN PWCHAR PathToFile OPTIONAL, IN ULON
 	NTSTATUS ntStatus = s_pfnLdrLoadDll( PathToFile, Flags, ModuleFileName, ModuleHandle);  
 	if( ntStatus == STATUS_SUCCESS && (Flags & LOAD_LIBRARY_AS_DATAFILE) == 0 )  
 	{
-#ifdef _DEBUG
+#ifdef _DEBUG1
 		if( ModuleFileName->Length > 0 )
 		{
 			WCHAR wszPath[MAX_PATH] = {0};  
