@@ -6,14 +6,14 @@
 #include "MiniBlog.h"
 #include "MiniBlogDlg.h"
 #include "afxdialogex.h"
-#include "SinaBrowserTool.h"
+#include "SinaSvr.h"
 
 #define  TIMER_AUTO_START WM_USER+2011
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
 
-#define  GRID_ROW_COUNT 4
+#define  GRID_ROW_COUNT 3
 
 // CAboutDlg dialog used for App About
 
@@ -56,11 +56,15 @@ CMiniBlogDlg::CMiniBlogDlg(CWnd* pParent /*=NULL*/)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 	m_pDB = new CSQLiteTool();
-	m_pSinaSvr = new SinaBrowserTool();
 	m_pTaskMgr = new CTaskMgr();
-	m_pTaskMgr->SetSvr(m_pSinaSvr);
 }
+CMiniBlogDlg::~CMiniBlogDlg()
+{
+	delete m_pTaskMgr;
+	delete m_pDB;
+	delete m_pSinaSvr;
 
+};
 void CMiniBlogDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
@@ -77,6 +81,9 @@ BEGIN_MESSAGE_MAP(CMiniBlogDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON_ADD_USER, &CMiniBlogDlg::OnBnClickedButtonAddUser)
 	ON_WM_TIMER()
 	ON_WM_DESTROY()
+//	ON_WM_CREATE()
+//ON_WM_CREATE()
+ON_WM_SIZE()
 END_MESSAGE_MAP()
 
 BOOL CMiniBlogDlg::Init()
@@ -154,9 +161,6 @@ BOOL CMiniBlogDlg::InitGrid()
 						Item.strText = _T("ÕÊºÅ");
 						break;
 					case 2:
-						Item.strText = _T("ÃÜÂë");
-						break;
-					case 3:
 						Item.strText = _T("×´Ì¬");
 						break;
 					}
@@ -187,10 +191,19 @@ BOOL CMiniBlogDlg::InitUI()
 {
 	if (!m_pSinaSvr)
 		return FALSE;
+	m_pSinaSvr = new CSinaSvr(GetSafeHwnd());
+	m_pTaskMgr->SetSvr(m_pSinaSvr);
 	m_pSinaSvr->CreateFromControl(this,IDC_STATIC_BROWSER);
-
 	InitGrid();
+	//m_pSinaSvr->CreateFromControl(this,IDC_STATIC_BROWSER);
+#ifdef _DEBUG
+	//CString strName = _T("fortestonlya@sina.com");
+	//CString strPwd = _T("fortestonlya");
+	m_Username.SetWindowText(_T("shzhqiu@hotmail.com"));
+	m_UserPwd.SetWindowText(_T("93732717"));
 
+
+#endif // _DEBUG
 
 
 	return S_OK;
@@ -285,35 +298,40 @@ HCURSOR CMiniBlogDlg::OnQueryDragIcon()
 
 void CMiniBlogDlg::OnBnClickedButton1Test()
 {
-	SetTimer(TIMER_AUTO_START,1000*60,NULL);
-	/*
-	char szName[MAX_PATH] = {0};
-	char szPwd[MAX_PATH]  = {0};
-	srand(GetTickCount());
-	int rnd = rand();
-	//m_pDB->AddFans("name","pwd");
-	TCHAR szPost[1024] = {0};
-	_stprintf(szPost,_T("hello test %d"),rnd);
-	//m_pSinaSvr->PostWeibo(szPost);
-	//m_pSinaSvr->Forward(_T("3366225281064089"),_T("2400232192"),szPost);
-	m_pSinaSvr->Comment(_T("3366225281064089"),_T("2400232192"),szPost);
-	*/
+	//SetTimer(TIMER_AUTO_START,1000*60,NULL);
+
+	TASK_PARAM tp = {0};
+	tp.dwTaskType = ACT_LOGIN_SINA;
+	_tcscpy(tp.user.szUserName,_T("shzhqiu@hotmail.com"));
+	_tcscpy(tp.user.szUserPwd,_T("93732717"));
+
+	m_pSinaSvr->ProcessTask(&tp);
+
 	// TODO: Add your control notification handler code here
 }
 
 
 void CMiniBlogDlg::OnBnClickedButtonAddUser()
 {
+	
 	CString strName;
 	m_Username.GetWindowText(strName);
 	CString strPwd;
 	m_UserPwd.GetWindowText(strPwd);
-	//strName = _T("fortestonlya@sina.com");
-	//strPwd = _T("fortestonlya");
-	strName = _T("shzhqiu@hotmail.com");
-	strPwd = _T("93732717");
+	if (strName.GetLength() <10 || strPwd.GetLength() <= 5)
+	{
+		AfxMessageBox(L"ÇëÕýÈ·ÊäÈëÕÊºÅºÍÃÜÂë",MB_ICONINFORMATION);
+		return;
+	}
+
 	AddFansToGrid(strName,strPwd);
-	m_pSinaSvr->Login(strName.GetBuffer(strName.GetLength()),strPwd.GetBuffer(strPwd.GetLength()));
+
+	TASK_PARAM tp = {0};
+	tp.dwTaskType = ACT_LOGIN_SINA;
+	_tcscpy(tp.user.szUserName,strName.GetBuffer());
+	_tcscpy(tp.user.szUserPwd,strPwd.GetBuffer());
+
+	m_pSinaSvr->ProcessTask(&tp);
 
 	// TODO: Add your control notification handler code here
 }
@@ -338,10 +356,10 @@ void CMiniBlogDlg::AddFansToGrid(LPCTSTR lpName,LPCTSTR lpPWD)
 		case 1:
 			Item.strText = lpName;
 			break;
+// 		case 2:
+// 			Item.strText = lpPWD;
+// 			break;
 		case 2:
-			Item.strText = lpPWD;
-			break;
-		case 3:
 			Item.strText = _T("µÇÂ¼ÖÐ...");
 			m_Grid.SetItemState(nRow,i, m_Grid.GetItemState(nRow,i) & ~GVIS_READONLY);
 			m_Grid.Invalidate();
@@ -380,8 +398,14 @@ void CMiniBlogDlg::OnDestroy()
 {
 	CDialogEx::OnDestroy();
 	KillTimer(TIMER_AUTO_START);
-	delete m_pTaskMgr;
-	delete m_pDB;
-	delete m_pSinaSvr;
+	// TODO: Add your message handler code here
+}
+
+
+void CMiniBlogDlg::OnSize(UINT nType, int cx, int cy)
+{
+	CDialogEx::OnSize(nType, cx, cy);
+	RECT rc={0,0,0,0};
+	//m_pSinaSvr->SetWebRect(&rc);
 	// TODO: Add your message handler code here
 }

@@ -2,9 +2,19 @@
 typedef struct tag_TASK_PARAM
 {
 	DWORD dwTaskType;
-	TCHAR szUID[MAX_PATH];
-	TCHAR szBlogID[MAX_PATH];
-	TCHAR szContent[MAX_PATH];
+	union
+	{
+		struct{
+			TCHAR szUID[MAX_PATH];
+			TCHAR szBlogID[MAX_PATH];
+			TCHAR szContent[MAX_PATH];
+		}post;
+		struct
+		{
+			TCHAR szUserName[50];
+			TCHAR szUserPwd[50];
+		}user;
+	};
 }TASK_PARAM,*LPTASK_PARAM;
 
 typedef enum tag_TASK_ACTION
@@ -13,26 +23,26 @@ typedef enum tag_TASK_ACTION
 	ACT_FOLLOW_SINA,
 	ACT_CHECK_FOLLOWER_SINA,
 	ACT_POST_SINA,
-	ACT_REPLY_SINA,
-	ACT_REPOST_SINA,
-
-	ACT_END
+	ACT_COMMENT_SINA,
+	ACT_FORWARD_SINA,
+		
+	ACT_NULL
 }TASK_ACTION;
 
-class WeiboServiceBase;  
+class CWeiboServiceBase;  
 class CTaskMgr
 {
 public:
 	CTaskMgr(void);
 	~CTaskMgr(void);
 public:
-	void SetSvr(WeiboServiceBase * pSrv){m_pSrv = pSrv;};
+	void SetSvr(CWeiboServiceBase * pSvr){m_pSvr = pSvr;};
 	void GetTask();
 private:
 	BOOL CheckElapsed();
 private:
 	DWORD m_dwLastTick;
-	WeiboServiceBase *m_pSrv;
+	CWeiboServiceBase *m_pSvr;
 	TASK_PARAM m_taskParam;
 
 };

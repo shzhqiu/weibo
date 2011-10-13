@@ -1,11 +1,11 @@
 #include "StdAfx.h"
 #include "TaskMgr.h"
-#include "SimpleBrowser.h"
+#include "SinaSvr.h"
 
 CTaskMgr::CTaskMgr(void)
 {
 	m_dwLastTick = GetTickCount();
-	m_pSrv = NULL;
+	m_pSvr = NULL;
 }
 
 
@@ -25,8 +25,8 @@ void CTaskMgr::GetTask()
 	_stprintf(szPost,_T("hello test %d"),rnd);
 	ZeroMemory(&m_taskParam,sizeof(m_taskParam));
 	m_taskParam.dwTaskType = ACT_POST_SINA;
-	_tcscpy(m_taskParam.szContent,szPost);
-	m_pSrv->ProcessTask(&m_taskParam);
+	_tcscpy(m_taskParam.post.szContent,szPost);
+	m_pSvr->ProcessTask(&m_taskParam);
 }
 
 BOOL CTaskMgr::CheckElapsed()

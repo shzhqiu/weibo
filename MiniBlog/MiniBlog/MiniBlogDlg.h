@@ -2,7 +2,6 @@
 // MiniBlogDlg.h : header file
 //
 #pragma once
-#include "SinaBrowserTool.h"
 #include "SQLiteTool.h"
 #include "afxwin.h"
 #include "GridCtrl/GridCtrl.h"
@@ -12,7 +11,7 @@
 #include "GridCtrl/GridCellNumeric.h"
 #include "GridCtrl/GridCellDateTime.h"
 #include "TaskMgr.h"
-
+#include "SinaSvr.h"
 
 // CMiniBlogDlg dialog
 class CMiniBlogDlg : public CDialogEx
@@ -20,6 +19,7 @@ class CMiniBlogDlg : public CDialogEx
 // Construction
 public:
 	CMiniBlogDlg(CWnd* pParent = NULL);	// standard constructor
+	~CMiniBlogDlg();
 
 // Dialog Data
 	enum { IDD = IDD_MINIBLOG_DIALOG };
@@ -55,14 +55,17 @@ private:
 	BOOL InitGrid();
 	void AddFansToGrid(LPCTSTR lpName,LPCTSTR lpPWD);
 private:
-	SinaBrowserTool *m_pSinaSvr;
+	CSinaSvr	 *m_pSinaSvr;
 	CTaskMgr     *m_pTaskMgr;
 	CSQLiteTool *m_pDB;
-	CGridCtrl  m_Grid;
+	CGridCtrl	m_Grid;
 	TASK_PARAM  m_TaskParam;
 
 
 public:
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	afx_msg void OnDestroy();
+//	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+//	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+	afx_msg void OnSize(UINT nType, int cx, int cy);
 };

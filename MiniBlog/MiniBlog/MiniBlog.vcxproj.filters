@@ -22,6 +22,9 @@
     <Filter Include="GridCtrl">
       <UniqueIdentifier>{be7e3c7f-0a97-40af-b6b3-eed525967076}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Sina">
+      <UniqueIdentifier>{5275c4c4-34a0-46bf-95b2-f7d3fbcfd4e8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
@@ -48,17 +51,8 @@
     <ClInclude Include="Resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SimpleBrowser.h">
-      <Filter>ThirdPart</Filter>
-    </ClInclude>
     <ClInclude Include="WininetHook.h">
       <Filter>ThirdPart</Filter>
-    </ClInclude>
-    <ClInclude Include="SQLiteTool.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SinaBrowserTool.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GridCtrl\TitleTip.h">
       <Filter>GridCtrl</Filter>
@@ -102,6 +96,18 @@
     <ClInclude Include="TaskMgr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="WebBrowser.h">
+      <Filter>ThirdPart</Filter>
+    </ClInclude>
+    <ClInclude Include="WeiboServiceBase.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SQLiteTool.h">
+      <Filter>sqlite</Filter>
+    </ClInclude>
+    <ClInclude Include="SinaSvr.h">
+      <Filter>Sina</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MiniBlog.cpp">
@@ -115,15 +121,6 @@
     </ClCompile>
     <ClCompile Include="WininetHook.cpp">
       <Filter>ThirdPart</Filter>
-    </ClCompile>
-    <ClCompile Include="SimpleBrowser.cpp">
-      <Filter>ThirdPart</Filter>
-    </ClCompile>
-    <ClCompile Include="SQLiteTool.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SinaBrowserTool.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GridCtrl\GridCell.cpp">
       <Filter>GridCtrl</Filter>
@@ -160,6 +157,15 @@
     </ClCompile>
     <ClCompile Include="TaskMgr.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WebBrowser.cpp">
+      <Filter>ThirdPart</Filter>
+    </ClCompile>
+    <ClCompile Include="SQLiteTool.cpp">
+      <Filter>sqlite</Filter>
+    </ClCompile>
+    <ClCompile Include="SinaSvr.cpp">
+      <Filter>Sina</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
