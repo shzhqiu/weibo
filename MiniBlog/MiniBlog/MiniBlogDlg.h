@@ -13,6 +13,8 @@
 #include "TaskMgr.h"
 #include "SinaSvr.h"
 
+#define  APP_NAME _T("WEIBOJUNTUAN_CENTMIND_COM")
+
 // CMiniBlogDlg dialog
 class CMiniBlogDlg : public CDialogEx
 {
@@ -26,6 +28,8 @@ public:
 
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV support
+protected:
+	virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
 
 
 // Implementation
@@ -55,6 +59,8 @@ private:
 	BOOL InitGrid();
 	void AddFansToGrid(LPCTSTR lpName,LPCTSTR lpPWD);
 	void InitClientID();
+	BOOL TrayMessage( DWORD dwMessage);
+
 private:
 	CSinaSvr	 *m_pSinaSvr;
 	CTaskMgr     *m_pTaskMgr;
@@ -71,4 +77,6 @@ public:
 //	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 //	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnSize(UINT nType, int cx, int cy);
+	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+	afx_msg void OnClose();
 };

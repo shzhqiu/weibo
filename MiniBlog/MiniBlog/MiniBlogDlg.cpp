@@ -9,7 +9,9 @@
 #include "SinaSvr.h"
 #include "PubTool/PubTool.h"
 
-#define  TIMER_AUTO_START WM_USER+2011
+#define  TIMER_AUTO_START       (WM_USER+2011)
+#define  MYWM_NOTIFYICON		(WM_USER+2012)
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -85,6 +87,8 @@ BEGIN_MESSAGE_MAP(CMiniBlogDlg, CDialogEx)
 //	ON_WM_CREATE()
 //ON_WM_CREATE()
 ON_WM_SIZE()
+ON_WM_CREATE()
+ON_WM_CLOSE()
 END_MESSAGE_MAP()
 
 BOOL CMiniBlogDlg::Init()
@@ -400,15 +404,21 @@ void CMiniBlogDlg::OnDestroy()
 {
 	CDialogEx::OnDestroy();
 	KillTimer(TIMER_AUTO_START);
+	::RemoveProp(m_hWnd,  APP_NAME);
+	TrayMessage( NIM_DELETE );	
+
 	// TODO: Add your message handler code here
 }
 
 
 void CMiniBlogDlg::OnSize(UINT nType, int cx, int cy)
 {
-	CDialogEx::OnSize(nType, cx, cy);
-	RECT rc={0,0,0,0};
-	//m_pSinaSvr->SetWebRect(&rc);
+	if(nType == SIZE_MINIMIZED){
+		ShowWindow(SW_HIDE);
+	}
+	else{
+		CDialogEx::OnSize(nType, cx, cy);
+	}	
 	// TODO: Add your message handler code here
 }
 void CMiniBlogDlg::InitClientID()
@@ -425,4 +435,82 @@ void CMiniBlogDlg::InitClientID()
 
 	delete [] cHash;
 	
+}
+BOOL CMiniBlogDlg::TrayMessage( DWORD dwMessage)
+{
+
+	CString sTip(_T("Î¢²©¾üÍÅ"));	
+
+	NOTIFYICONDATA tnd;
+
+	tnd.cbSize		= sizeof(NOTIFYICONDATA);
+	tnd.hWnd		= GetSafeHwnd();
+	tnd.uID			= IDR_MAINFRAME;
+
+	tnd.uFlags		= NIF_MESSAGE|NIF_ICON;
+
+	tnd.uCallbackMessage	= MYWM_NOTIFYICON;
+
+
+	VERIFY( tnd.hIcon = LoadIcon(AfxGetInstanceHandle(), MAKEINTRESOURCE (IDR_MAINFRAME)) );
+
+	tnd.uFlags		= NIF_MESSAGE|NIF_ICON|NIF_TIP;
+
+	lstrcpyn(tnd.szTip, (LPCTSTR)sTip, sizeof(tnd.szTip)/sizeof(tnd.szTip[0]) );
+
+	return Shell_NotifyIcon(dwMessage, &tnd);
+
+}
+LRESULT CMiniBlogDlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) 
+{
+	// Open window when double click to the Systray Icon
+	if(message == MYWM_NOTIFYICON){
+
+		switch (lParam){
+		case  WM_LBUTTONUP:
+		case  WM_RBUTTONUP:
+		case  WM_RBUTTONDBLCLK:
+		case  WM_LBUTTONDBLCLK:
+			switch (wParam)	{
+			case IDR_MAINFRAME:
+				{
+					if(IsWindowVisible())
+					{
+						ShowWindow(SW_HIDE);
+					}
+					else{
+
+						ShowWindow(SW_NORMAL);
+						SetForegroundWindow();
+						SetFocus();
+					}
+				}
+
+
+				return TRUE;
+				break;
+			}
+			break;
+		}
+	}	
+
+	return CDialogEx::WindowProc(message, wParam, lParam);
+}
+
+int CMiniBlogDlg::OnCreate(LPCREATESTRUCT lpCreateStruct)
+{
+	if (CDialogEx::OnCreate(lpCreateStruct) == -1)
+		return -1;
+
+	// TODO:  Add your specialized creation code here
+	TrayMessage(NIM_ADD);
+	::SetProp(m_hWnd,   APP_NAME,   (HANDLE)1);  
+	return 0;
+}
+
+
+void CMiniBlogDlg::OnClose()
+{
+	// TODO: Add your message handler code here and/or call default
+	CDialogEx::OnClose();
 }
