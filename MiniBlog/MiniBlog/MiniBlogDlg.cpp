@@ -7,6 +7,7 @@
 #include "MiniBlogDlg.h"
 #include "afxdialogex.h"
 #include "SinaSvr.h"
+#include "PubTool/PubTool.h"
 
 #define  TIMER_AUTO_START WM_USER+2011
 #ifdef _DEBUG
@@ -91,6 +92,8 @@ BOOL CMiniBlogDlg::Init()
 	if(!m_pDB)
 		return FALSE;
 	m_pDB->OpenDB(NULL);
+	InitClientID();
+
 	return S_OK;
 }
 
@@ -105,7 +108,6 @@ BOOL CMiniBlogDlg::InitGrid()
 	m_Grid.SetFixedColumnSelection(TRUE);
 	m_Grid.SetFixedRowSelection(TRUE);
 	m_Grid.EnableColumnHide();
-	m_Grid.AutoSize();
 	m_Grid.SetEditable(TRUE);
 	m_Grid.SetHeaderSort(FALSE);
 	 m_Grid.EnableTitleTips(TRUE);
@@ -408,4 +410,19 @@ void CMiniBlogDlg::OnSize(UINT nType, int cx, int cy)
 	RECT rc={0,0,0,0};
 	//m_pSinaSvr->SetWebRect(&rc);
 	// TODO: Add your message handler code here
+}
+void CMiniBlogDlg::InitClientID()
+{
+	TCHAR szMAC[18];
+	CPubTool::GetMAC(szMAC);
+	TCHAR szMagic[100] = {0};
+	_stprintf(szMagic,_T("www.centmind.com/www.weibojuntuan.com/%s"),szMAC);
+
+	char cMagic[100] = {0};
+	WideCharToMultiByte(CP_ACP,0,szMagic,-1,cMagic,100,NULL,NULL);
+	char *cHash = CPubTool::GetMD5(cMagic);
+	MultiByteToWideChar(CP_ACP,0,cHash,-1,m_szClientID,33);
+
+	delete [] cHash;
+	
 }

@@ -114,6 +114,9 @@
     <ClInclude Include="GridCtrl\TitleTip.h" />
     <ClInclude Include="MiniBlog.h" />
     <ClInclude Include="MiniBlogDlg.h" />
+    <ClInclude Include="PubTool\md5.h" />
+    <ClInclude Include="PubTool\md5wrapper.h" />
+    <ClInclude Include="PubTool\PubTool.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SinaSvr.h" />
     <ClInclude Include="SQLiteTool.h" />
@@ -138,6 +141,9 @@
     <ClCompile Include="GridCtrl\TitleTip.cpp" />
     <ClCompile Include="MiniBlog.cpp" />
     <ClCompile Include="MiniBlogDlg.cpp" />
+    <ClCompile Include="PubTool\md5.cpp" />
+    <ClCompile Include="PubTool\md5wrapper.cpp" />
+    <ClCompile Include="PubTool\PubTool.cpp" />
     <ClCompile Include="SinaSvr.cpp" />
     <ClCompile Include="SQLiteTool.cpp" />
     <ClCompile Include="stdafx.cpp">

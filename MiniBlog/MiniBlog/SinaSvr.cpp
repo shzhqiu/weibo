@@ -5,7 +5,7 @@
 CSinaSvr::CSinaSvr(HWND hWnd):
 m_hWnd(hWnd)
 {
-
+	ZeroMemory(m_szCurUID,sizeof(m_szCurUID));
 }
 
 
@@ -337,6 +337,7 @@ HRESULT CSinaSvr::CheckLoginStatus(CString URL)
 	}
 	pDoc3->Release();
 
+
 	//http://weibo.com/signup/full_info.php?uid=2452258262&type=2&r=/2452258262 not regist for weibo.
 	if (URL.Find(_T("http://weibo.com/signup/full_info.php?uid="),0) >= 0)
 	{
@@ -345,20 +346,93 @@ HRESULT CSinaSvr::CheckLoginStatus(CString URL)
 
 		return S_OK;
 	}
+
+	// login ok
+	if (URL.Find(_T("http://weibo.com/"),0) >= 0)
+	{
+		SetActionStatus(SINA_OK);
+		SetAction(ACT_NULL);
+		GetUID();
+		return S_OK;
+	}
 	
+#if 0
+
+
 	CString strHtml;
-	IHTMLDocument2 *pDoc = GetDocument2();
 	GetCookie(m_strCookie);
 	GetHtml(strHtml);
-	pDoc->Release();
-	
+	CString strSrcipt;
+	GetScript(strSrcipt);
 	FILE *f = _tfopen(_T("cookie.txt"),_T("w"));
 	fwrite(m_strCookie.GetBuffer(),1,m_strCookie.GetLength()*2,f);
 	fclose(f);
 	
 	f = _tfopen(_T("html.txt"),_T("w"));
-	fwrite(strHtml.GetBuffer(),1,strHtml.GetLength(),f);
+	int len = strHtml.GetLength();
+	char * p = new char[len];
+	WideCharToMultiByte(CP_ACP,0,strHtml.GetBuffer(),-1,p,len,0,0);
+// 	char szPost[1024]= {0};
+// 	WideCharToMultiByte(CP_UTF8, 0, szwPost, -1, szPost, MAX_PATH, NULL, NULL);
+
+	fwrite(p,1,len,f);
 	fclose(f);
+	delete [] p;
+
+
+	f = _tfopen(_T("script.txt"),_T("w"));
+	len = strSrcipt.GetLength();
+	p = new char[len];
+	WideCharToMultiByte(CP_ACP,0,strSrcipt.GetBuffer(),-1,p,len,0,0);
+	// 	char szPost[1024]= {0};
+	// 	WideCharToMultiByte(CP_UTF8, 0, szwPost, -1, szPost, MAX_PATH, NULL, NULL);
+
+	fwrite(p,1,len,f);
+	fclose(f);
+	delete [] p;
+#endif
 
 	return S_OK;
+}
+
+HRESULT CSinaSvr::GetUID()
+{
+	CComQIPtr<IHTMLDocument2> pDoc2 = GetDocument2();
+	CComQIPtr<IHTMLElementCollection> i_Collect;
+	HRESULT hr = pDoc2->get_scripts(&i_Collect);
+	if (!i_Collect)
+		return FALSE;
+	long uLen = 0;
+	i_Collect->get_length(&uLen);
+	BSTR   ElementSrcText; 
+	for (long i=0;i<uLen;i++){
+		CComQIPtr<IHTMLScriptElement> iScript;
+		CComQIPtr<IDispatch> i_Dispath;
+		i_Dispath   =   getElementInCollection(i_Collect,i);
+		i_Dispath-> QueryInterface(IID_IHTMLScriptElement,(void   **)&iScript); 
+
+		//iScript-> get_src(&ElementSrcText); 
+		iScript->get_text(&ElementSrcText);
+		CString str = ElementSrcText;
+		int nPos = str.Find(_T("$CONFIG['uid']"),0);
+		if (nPos >= 0)
+		{
+			int nPos1 = str.Find(_T(";"),nPos);
+			//$CONFIG['uid'] = '1828546224'
+			str = str.Mid(nPos,nPos1-nPos);
+			nPos = str.Find(_T("="),0);
+			if ( nPos > 0 )
+			{
+				nPos = str.Find(_T("'"),nPos);
+				nPos1 = str.Find(_T("'"),nPos+1);
+				str = str.Mid(nPos,nPos1-nPos);
+				_stprintf(m_szCurUID,_T("%s"),str.GetBuffer());
+				//_tcscpy(m_szCurUID,str.GetBuffer());
+			}
+			break;
+		}
+
+	}
+	return TRUE;
+
 }

@@ -501,13 +501,12 @@ RETURN:
 HRESULT CWebBrowserBase::Navigate(BSTR URL,VARIANT *Flags,VARIANT *TargetFrameName,VARIANT *PostData,VARIANT *Headers)
 {
 	//Navigate(BSTR URL,VARIANT *Flags,VARIANT *TargetFrameName,VARIANT *PostData,VARIANT *Headers)
-	GetWebBrowser2()->Navigate( (BSTR)L"http://www.baidu.com",0,0,0,0);
+	GetWebBrowser2()->Navigate( URL,Flags,TargetFrameName,PostData,Headers);
 	return S_OK;
 }
 HRESULT  CWebBrowserBase::Navigate2(VARIANT *vaURL,VARIANT *vaFlags,VARIANT *vaTargetFrame,VARIANT *vaPostData,VARIANT *vaHeaders)
 {
 		return GetWebBrowser2()->Navigate2(vaURL,vaFlags,vaTargetFrame,vaPostData,vaHeaders);
-	
 }
 
 DISPID CWebBrowserBase::FindId(IDispatch *pObj, LPOLESTR pName)
@@ -628,22 +627,54 @@ BOOL CWebBrowserBase::GetCookie(CString& refString)
 }
 BOOL CWebBrowserBase::GetScript(CString& refString)
 {
-	BSTR bstrCookie;
-	IHTMLDocument2 *pDoc2 = GetDocument2();
-	HRESULT hr = pDoc2->get_cookie(&bstrCookie);
-	pDoc2->Release();
+	CComQIPtr<IHTMLDocument2> pDoc2 = GetDocument2();
+	CComQIPtr<IHTMLElementCollection> i_Collect;
+	HRESULT hr = pDoc2->get_scripts(&i_Collect);
+	if (!i_Collect)
+		return FALSE;
+	long uLen = 0;
+	i_Collect->get_length(&uLen);
+	BSTR   ElementSrcText; 
 
-	refString = bstrCookie;
+	for (long i=0;i<uLen;i++){
+		CComQIPtr<IHTMLScriptElement> iScript;
+		CComQIPtr<IDispatch> i_Dispath;
+		i_Dispath   =   getElementInCollection(i_Collect,i);
+		i_Dispath-> QueryInterface(IID_IHTMLScriptElement,(void   **)&iScript); 
+
+		//iScript-> get_src(&ElementSrcText); 
+		iScript->get_text(&ElementSrcText);
+		refString += ElementSrcText;
+
+	}
 	return TRUE;
 }
 BOOL CWebBrowserBase::GetHtml(CString& refString)
 {
-	BSTR bstrCookie;
-	IHTMLDocument2 *pDoc2 = GetDocument2();
-	HRESULT hr = pDoc2->get_cookie(&bstrCookie);
-	pDoc2->Release();
+	IHTMLDocument2   *pDoc = GetDocument2();	//假设pDoc已取得合法地值。   
+	IHTMLDocument2 *lpHtmlDocument = NULL;
 
-	refString = bstrCookie;
+	IHTMLElement *lpBodyElm;
+	IHTMLElement *lpParentElm;
+
+	pDoc->get_body(&lpBodyElm);
+	ASSERT(lpBodyElm);
+	pDoc->Release();
+	// get_body returns all between <BODY> and </BODY>. 
+
+	// I need all between <HTML> and </HTML>.
+
+
+	// the parent of BODY is HTML
+
+	lpBodyElm->get_parentElement(&lpParentElm);
+	ASSERT(lpParentElm);
+	BSTR    bstr;
+	lpParentElm->get_outerHTML(&bstr);
+	refString = bstr;
+
+	lpParentElm->Release();
+	lpBodyElm->Release();
 	return TRUE;
 }
 IDispatch * CWebBrowserBase::getElementInCollection(IHTMLElementCollection   *pEltCollection,int   ndx) 

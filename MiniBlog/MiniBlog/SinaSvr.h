@@ -48,6 +48,7 @@ private:
 
 
 	HRESULT CheckLoginStatus(CString URL);
+	HRESULT GetUID();
 
 private:
 	HWND m_hWnd;

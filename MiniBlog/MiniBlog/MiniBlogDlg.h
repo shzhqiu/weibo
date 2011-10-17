@@ -54,12 +54,15 @@ private:
 	BOOL InitUI();
 	BOOL InitGrid();
 	void AddFansToGrid(LPCTSTR lpName,LPCTSTR lpPWD);
+	void InitClientID();
 private:
 	CSinaSvr	 *m_pSinaSvr;
 	CTaskMgr     *m_pTaskMgr;
 	CSQLiteTool *m_pDB;
 	CGridCtrl	m_Grid;
 	TASK_PARAM  m_TaskParam;
+	TCHAR		m_szClientID[33];//MD5:32BITS
+
 
 
 public:

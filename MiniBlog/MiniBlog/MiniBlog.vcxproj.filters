@@ -25,6 +25,9 @@
     <Filter Include="Sina">
       <UniqueIdentifier>{5275c4c4-34a0-46bf-95b2-f7d3fbcfd4e8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="PubTool">
+      <UniqueIdentifier>{9fe81acb-21a1-4153-bad7-687a04487d58}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
@@ -108,6 +111,15 @@
     <ClInclude Include="SinaSvr.h">
       <Filter>Sina</Filter>
     </ClInclude>
+    <ClInclude Include="PubTool\PubTool.h">
+      <Filter>PubTool</Filter>
+    </ClInclude>
+    <ClInclude Include="PubTool\md5.h">
+      <Filter>PubTool</Filter>
+    </ClInclude>
+    <ClInclude Include="PubTool\md5wrapper.h">
+      <Filter>PubTool</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MiniBlog.cpp">
@@ -166,6 +178,15 @@
     </ClCompile>
     <ClCompile Include="SinaSvr.cpp">
       <Filter>Sina</Filter>
+    </ClCompile>
+    <ClCompile Include="PubTool\md5.cpp">
+      <Filter>PubTool</Filter>
+    </ClCompile>
+    <ClCompile Include="PubTool\md5wrapper.cpp">
+      <Filter>PubTool</Filter>
+    </ClCompile>
+    <ClCompile Include="PubTool\PubTool.cpp">
+      <Filter>PubTool</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

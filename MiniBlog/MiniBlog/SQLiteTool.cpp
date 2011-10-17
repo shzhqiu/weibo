@@ -134,6 +134,7 @@ HRESULT CSQLiteTool::InitDB()
 	const char *zTail;
 
 	int nTableCnt = sizeof(initsql) / sizeof(initsql[0]);
+	
 
 	for (int i = 0 ; i < nTableCnt; ++i)
 	{
