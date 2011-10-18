@@ -14,6 +14,10 @@ typedef struct tag_TASK_PARAM
 			TCHAR szUserName[50];
 			TCHAR szUserPwd[50];
 		}user;
+		struct
+		{
+			TCHAR szURL[1024];
+		}ad;
 	};
 }TASK_PARAM,*LPTASK_PARAM;
 
@@ -25,24 +29,26 @@ typedef enum tag_TASK_ACTION
 	ACT_POST_SINA,
 	ACT_COMMENT_SINA,
 	ACT_FORWARD_SINA,
+
+	ACT_CLICK_AD,
 		
 	ACT_NULL
 }TASK_ACTION;
 
-class CWeiboServiceBase;  
+class CTaskProcessBase;  
 class CTaskMgr
 {
 public:
 	CTaskMgr(void);
 	~CTaskMgr(void);
 public:
-	void SetSvr(CWeiboServiceBase * pSvr){m_pSvr = pSvr;};
+	void SetSvr(CTaskProcessBase * pSvr){m_pSvr = pSvr;};
 	void GetTask();
 private:
 	BOOL CheckElapsed();
 private:
 	DWORD m_dwLastTick;
-	CWeiboServiceBase *m_pSvr;
+	CTaskProcessBase *m_pSvr;
 	TASK_PARAM m_taskParam;
 
 };

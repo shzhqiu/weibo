@@ -54,7 +54,7 @@ HRESULT CSinaSvr::GetExternal(IDispatch **ppDispatch)
 	return S_OK;
 }
 
-HRESULT CSinaSvr::ProcessTask(LPTASK_PARAM lpTaskParam)
+HRESULT CSinaSvr::AddTask(LPTASK_PARAM lpTaskParam)
 {
 	if (lpTaskParam == NULL)
 	{

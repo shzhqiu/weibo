@@ -120,6 +120,9 @@
     <ClInclude Include="PubTool\md5wrapper.h">
       <Filter>PubTool</Filter>
     </ClInclude>
+    <ClInclude Include="ADTask.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MiniBlog.cpp">
@@ -187,6 +190,9 @@
     </ClCompile>
     <ClCompile Include="PubTool\PubTool.cpp">
       <Filter>PubTool</Filter>
+    </ClCompile>
+    <ClCompile Include="ADTask.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

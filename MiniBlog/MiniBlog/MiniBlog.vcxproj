@@ -99,6 +99,7 @@
     <None Include="res\MiniBlog.rc2" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ADTask.h" />
     <ClInclude Include="GridCtrl\CellRange.h" />
     <ClInclude Include="GridCtrl\GridCell.h" />
     <ClInclude Include="GridCtrl\GridCellBase.h" />
@@ -128,6 +129,7 @@
     <ClInclude Include="WininetHook.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ADTask.cpp" />
     <ClCompile Include="GridCtrl\GridCell.cpp" />
     <ClCompile Include="GridCtrl\GridCellBase.cpp" />
     <ClCompile Include="GridCtrl\GridCellCheck.cpp" />

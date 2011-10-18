@@ -26,7 +26,7 @@ void CTaskMgr::GetTask()
 	ZeroMemory(&m_taskParam,sizeof(m_taskParam));
 	m_taskParam.dwTaskType = ACT_POST_SINA;
 	_tcscpy(m_taskParam.post.szContent,szPost);
-	m_pSvr->ProcessTask(&m_taskParam);
+	m_pSvr->AddTask(&m_taskParam);
 }
 
 BOOL CTaskMgr::CheckElapsed()

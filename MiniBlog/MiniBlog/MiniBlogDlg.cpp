@@ -307,7 +307,7 @@ void CMiniBlogDlg::OnBnClickedButton1Test()
 	_tcscpy(tp.user.szUserName,_T("shzhqiu@hotmail.com"));
 	_tcscpy(tp.user.szUserPwd,_T("93732717"));
 
-	m_pSinaSvr->ProcessTask(&tp);
+	m_pSinaSvr->AddTask(&tp);
 
 	// TODO: Add your control notification handler code here
 }
@@ -333,7 +333,7 @@ void CMiniBlogDlg::OnBnClickedButtonAddUser()
 	_tcscpy(tp.user.szUserName,strName.GetBuffer());
 	_tcscpy(tp.user.szUserPwd,strPwd.GetBuffer());
 
-	m_pSinaSvr->ProcessTask(&tp);
+	m_pSinaSvr->AddTask(&tp);
 
 	// TODO: Add your control notification handler code here
 }

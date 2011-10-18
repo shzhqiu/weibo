@@ -22,7 +22,7 @@ public:
 
 	// weibo service base
 public:
-	virtual HRESULT ProcessTask(LPTASK_PARAM lpTaskParam);
+	virtual HRESULT AddTask(LPTASK_PARAM lpTaskParam);
 	// browserbase
 public:
 	virtual HWND GetHWND(){return m_hWnd;}
