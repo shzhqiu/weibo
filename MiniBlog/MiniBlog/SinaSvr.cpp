@@ -1,11 +1,10 @@
 #include "StdAfx.h"
 #include "SinaSvr.h"
 
-
 CSinaSvr::CSinaSvr(HWND hWnd):
 m_hWnd(hWnd)
 {
-	ZeroMemory(m_szCurUID,sizeof(m_szCurUID));
+	ZeroMemory(&m_uiCurUserInfo,sizeof(m_uiCurUserInfo));
 }
 
 
@@ -65,6 +64,7 @@ HRESULT CSinaSvr::AddTask(LPTASK_PARAM lpTaskParam)
 	{
 	case ACT_LOGIN_SINA:
 		{
+			ZeroMemory(&m_uiCurUserInfo,sizeof(m_uiCurUserInfo));
 			Login(lpTaskParam->user.szUserName,lpTaskParam->user.szUserPwd);
 		}
 		break;
@@ -100,7 +100,7 @@ void CSinaSvr::Login(LPCTSTR lpUserName,LPCTSTR lpPwd)
 	SetAction(ACT_LOGIN_SINA);
 	TCHAR szPost[1024]= {0};
 	_stprintf(szPost,_T("username=%s&password=%s&entry=miniblog&act=1&from=referer%3Awww_index"),lpUserName,lpPwd);
-
+	_stprintf(m_uiCurUserInfo.szName,_T("%s"),lpUserName);
 	int iSize = _tcslen(szPost);
 
 	CByteArray arr;
@@ -168,7 +168,7 @@ void CSinaSvr::PostWeibo(LPCTSTR lpContent)
 	}
 
 	TCHAR szHeader[1024] = {0};
-	_stprintf(szHeader,_T("Accept: */*\r\nContent-Type: application/x-www-form-urlencoded\r\nReferer: http://weibo.com/%s\r\nx-requested-with: XMLHttpRequest"),m_szCurUID);
+	_stprintf(szHeader,_T("Accept: */*\r\nContent-Type: application/x-www-form-urlencoded\r\nReferer: http://weibo.com/%s\r\nx-requested-with: XMLHttpRequest"),m_uiCurUserInfo.szUID);
 
 	TCHAR szURL[1024]=_T("http://weibo.com/aj/mblog/add");
 	COleVariant vPostData = arr;
@@ -280,7 +280,7 @@ void CSinaSvr::Comment(LPCTSTR lpMid,LPCTSTR lpUID,LPCTSTR lpContent)
 	_tcscpy(szUid,lpUID);
 	_tcscpy(szContent,lpContent);
 	
-	_stprintf(szwPost,_T("act=post&mid=%s&uid=%s&forward=0&isroot=1&content=%s&_t=0"),szMid,m_szCurUID,szContent);
+	_stprintf(szwPost,_T("act=post&mid=%s&uid=%s&forward=0&isroot=1&content=%s&_t=0"),szMid,m_uiCurUserInfo.szUID,szContent);
 	char szPost[1024]= {0};
 	WideCharToMultiByte(CP_UTF8, 0, szwPost, -1, szPost, MAX_PATH, NULL, NULL);
 	
@@ -314,7 +314,7 @@ HRESULT CSinaSvr::CheckLoginStatus(CString URL)
 	//http://login.sina.com.cn/sso/login.php
 	*/
 	long ulen = 0;
-	IHTMLDocument3 *pDoc3 = GetDocument3();
+	CComQIPtr<IHTMLDocument3> pDoc3 = GetDocument3();
 	HRESULT hr = E_FAIL;
 	if (URL.Find(_T("http://login.sina.com.cn/sso/login.php"),0) >= 0)
 	{
@@ -331,11 +331,13 @@ HRESULT CSinaSvr::CheckLoginStatus(CString URL)
 			iInput->get_value(&str);
 			SetActionStatus(SINA_PWD_ERROR);
 			SetAction(ACT_NULL);
+			PostMessage(m_hWnd,WM_USER_LOGIN_STATUS,(WPARAM)&m_uiCurUserInfo,SINA_PWD_ERROR);
 			return S_OK;
 			
 		}
+		return S_OK;
 	}
-	pDoc3->Release();
+	
 
 
 	//http://weibo.com/signup/full_info.php?uid=2452258262&type=2&r=/2452258262 not regist for weibo.
@@ -343,18 +345,21 @@ HRESULT CSinaSvr::CheckLoginStatus(CString URL)
 	{
 		SetActionStatus(SINA_NO_WEIBO);
 		SetAction(ACT_NULL);
-
+		PostMessage(m_hWnd,WM_USER_LOGIN_STATUS,(WPARAM)&m_uiCurUserInfo,SINA_NO_WEIBO);
 		return S_OK;
 	}
 
 	// login ok
 	if (URL.Find(_T("http://weibo.com/"),0) >= 0)
 	{
-		SetActionStatus(SINA_OK);
+		SetActionStatus(SINA_LOGIN_SUCCESS);
 		SetAction(ACT_NULL);
 		GetUID();
+		PostMessage(m_hWnd,WM_USER_LOGIN_STATUS,(WPARAM)&m_uiCurUserInfo,SINA_LOGIN_SUCCESS);
 		return S_OK;
 	}
+	PostMessage(m_hWnd,WM_USER_LOGIN_STATUS,(WPARAM)&m_uiCurUserInfo,SINA_NONE);
+
 	
 #if 0
 
@@ -426,7 +431,7 @@ HRESULT CSinaSvr::GetUID()
 				nPos = str.Find(_T("'"),nPos);
 				nPos1 = str.Find(_T("'"),nPos+1);
 				str = str.Mid(nPos,nPos1-nPos);
-				_stprintf(m_szCurUID,_T("%s"),str.GetBuffer());
+				_stprintf(m_uiCurUserInfo.szUID,_T("%s"),str.GetBuffer());
 				//_tcscpy(m_szCurUID,str.GetBuffer());
 			}
 			break;

@@ -1,9 +1,9 @@
 #pragma once
 #include "WeiboServiceBase.h"
-
+#define  WM_USER_LOGIN_STATUS    (WM_USER+2020)
 enum ERROR_CODE
 {
-	SINA_OK = 0,
+	SINA_LOGIN_SUCCESS = 0,
 	SINA_PWD_ERROR,
 	SINA_LOGINING,
 	SINA_NO_WEIBO,
@@ -57,7 +57,7 @@ private:
 
 	DWORD          m_ActionStatus;
 	CString		   m_strCurURL;
-	TCHAR          m_szCurUID[MAX_PATH];
+	USERINFO       m_uiCurUserInfo;
 
 };
 

@@ -15,6 +15,10 @@
 #include "ADTask.h"
 
 #define  APP_NAME _T("WEIBOJUNTUAN_CENTMIND_COM")
+#define  TIMER_AUTO_START       (WM_USER+2011)
+#define  MYWM_NOTIFYICON		(WM_USER+2012)
+#define  WM_USER_LOGIN_STATUS    (WM_USER+2020)
+
 
 // CMiniBlogDlg dialog
 class CMiniBlogDlg : public CDialogEx
@@ -42,6 +46,7 @@ protected:
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
+	afx_msg LRESULT OnLoginStatus(WPARAM wParam, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
 
 public:
@@ -52,8 +57,8 @@ public:
 	afx_msg void OnBnClickedButtonAddUser();
 	
 private:
-	CEdit m_Username;
-	CEdit m_UserPwd;
+	CEdit m_edtUsername;
+	CEdit m_edtUserPwd;
 private:
 	BOOL Init();
 	BOOL InitUI();
@@ -61,6 +66,11 @@ private:
 	void AddFansToGrid(LPCTSTR lpName,LPCTSTR lpPWD);
 	void InitClientID();
 	BOOL TrayMessage( DWORD dwMessage);
+	
+	
+	BOOL IsUserAdded(LPCTSTR lpUserName);
+	void EnableAddUser(BOOL bEnable);
+	void SetUserStatus(USERINFO *pui,int nStatus);
 
 private:
 	CSinaSvr	 *m_pSinaSvr;
@@ -70,6 +80,7 @@ private:
 	CGridCtrl	m_Grid;
 	TASK_PARAM  m_TaskParam;
 	TCHAR		m_szClientID[33];//MD5:32BITS
+	std::vector<USERINFO> m_vtUserList;
 
 
 
@@ -81,4 +92,5 @@ public:
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnClose();
+	CButton m_btnAddUser;
 };

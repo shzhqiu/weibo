@@ -1,3 +1,4 @@
+CallMemberFunc
 
 // MiniBlogDlg.cpp : implementation file
 //
@@ -9,8 +10,7 @@
 #include "SinaSvr.h"
 #include "PubTool/PubTool.h"
 
-#define  TIMER_AUTO_START       (WM_USER+2011)
-#define  MYWM_NOTIFYICON		(WM_USER+2012)
+using namespace std;
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -66,14 +66,30 @@ CMiniBlogDlg::~CMiniBlogDlg()
 	delete m_pTaskMgr;
 	delete m_pDB;
 	delete m_pSinaSvr;
+	m_vtUserList.clear();
 
 };
+BOOL CMiniBlogDlg::IsUserAdded(LPCTSTR lpUserName)
+{
+	std::vector<USERINFO>::iterator end = m_vtUserList.end();
+	std::vector<USERINFO>::iterator beg = m_vtUserList.begin();
+	for (  ; beg != end ; beg++ ) 
+	{ 
+		if (_tcsicmp(lpUserName,beg->szName) == 0)
+		{
+			return TRUE;
+		}
+	}
+	
+	return FALSE;
+}
 void CMiniBlogDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
-	DDX_Control(pDX, IDC_EDIT_USERNAME, m_Username);
-	DDX_Control(pDX, IDC_EDIT_USERPWD, m_UserPwd);
+	DDX_Control(pDX, IDC_EDIT_USERNAME, m_edtUsername);
+	DDX_Control(pDX, IDC_EDIT_USERPWD, m_edtUserPwd);
 	DDX_Control(pDX, IDC_GRID_CTRL, m_Grid);
+	DDX_Control(pDX, IDC_BUTTON_ADD_USER, m_btnAddUser);
 }
 
 BEGIN_MESSAGE_MAP(CMiniBlogDlg, CDialogEx)
@@ -84,11 +100,12 @@ BEGIN_MESSAGE_MAP(CMiniBlogDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON_ADD_USER, &CMiniBlogDlg::OnBnClickedButtonAddUser)
 	ON_WM_TIMER()
 	ON_WM_DESTROY()
-//	ON_WM_CREATE()
-//ON_WM_CREATE()
-ON_WM_SIZE()
-ON_WM_CREATE()
-ON_WM_CLOSE()
+
+	ON_WM_SIZE()
+	ON_WM_CREATE()
+	ON_WM_CLOSE()
+	ON_MESSAGE(WM_USER_LOGIN_STATUS, OnLoginStatus)
+
 END_MESSAGE_MAP()
 
 BOOL CMiniBlogDlg::Init()
@@ -107,21 +124,20 @@ BOOL CMiniBlogDlg::InitGrid()
 
 	m_Grid.SetVirtualMode(FALSE);
 	m_Grid.SetEditable(FALSE);
-	m_Grid.EnableDragAndDrop(TRUE);
+	m_Grid.EnableDragAndDrop(FALSE);
 	m_Grid.GetDefaultCell(FALSE, FALSE)->SetBackClr(RGB(0xFF, 0xFF, 0xE0));
-	m_Grid.SetFixedColumnSelection(TRUE);
-	m_Grid.SetFixedRowSelection(TRUE);
+	m_Grid.SetFixedColumnSelection(FALSE);
+	m_Grid.SetFixedRowSelection(FALSE);
 	m_Grid.EnableColumnHide();
-	m_Grid.SetEditable(TRUE);
 	m_Grid.SetHeaderSort(FALSE);
-	 m_Grid.EnableTitleTips(TRUE);
+	m_Grid.EnableTitleTips(TRUE);
 /*	m_Grid.SetGridLines(GVL_NONE);
 	m_Grid.SetGridLines(GVL_HORZ);
 	m_Grid.SetGridLines(GVL_VERT);
 	*/
 	m_Grid.SetGridLines(GVL_BOTH);
 	m_Grid.SetCompareFunction(CGridCtrl::pfnCellNumericCompare);
-
+	m_Grid.SetDefCellHeight(25);
 
 	
 	{
@@ -131,7 +147,7 @@ BOOL CMiniBlogDlg::InitGrid()
 		int nRows = 1;
 
 
-		m_Grid.SetAutoSizeStyle();
+	
 
 		TRY {
 			m_Grid.SetRowCount(nRows);
@@ -156,18 +172,23 @@ BOOL CMiniBlogDlg::InitGrid()
 					Item.row = row;
 				for (int col = 0; col < GRID_ROW_COUNT; col++)
 				{ 
+					
+						
 					CString str;
 					Item.col = col;
 					switch(col)
 					{
 					case 0:
 						Item.strText = _T("序号");
+						m_Grid.SetColumnWidth(col,50);
 						break;
 					case 1:
 						Item.strText = _T("帐号");
+						m_Grid.SetColumnWidth(col,120);
 						break;
 					case 2:
 						Item.strText = _T("状态");
+						m_Grid.SetColumnWidth(col,80);
 						break;
 					}
 
@@ -182,12 +203,14 @@ BOOL CMiniBlogDlg::InitGrid()
 				}
 			}
 	}
+	m_Grid.SetItemFormat(0,1,DT_CENTER | DT_VCENTER);
+	//m_Grid.setf
 
 	//m_Grid.GetDefaultCell(FALSE,FALSE)->SetFormat(DT_RIGHT|DT_VCENTER|DT_SINGLELINE|DT_NOPREFIX|DT_END_ELLIPSIS);
-	//m_Grid.GetDefaultCell(TRUE, FALSE)->SetFormat(DT_RIGHT|DT_VCENTER|DT_SINGLELINE|DT_NOPREFIX|DT_END_ELLIPSIS);
+	//m_Grid.GetDefaultCell(TRUE, FALSE)->SetFormat(DT_CENTER | DT_VCENTER);
 
 	// Having weird Autosize problems with CE 2.11 - possibly just an emulation problem
-	m_Grid.AutoSize();
+	//m_Grid.AutoSize();
 
 
 	UpdateData(FALSE);
@@ -206,8 +229,8 @@ BOOL CMiniBlogDlg::InitUI()
 #ifdef _DEBUG
 	//CString strName = _T("fortestonlya@sina.com");
 	//CString strPwd = _T("fortestonlya");
-	m_Username.SetWindowText(_T("shzhqiu@hotmail.com"));
-	m_UserPwd.SetWindowText(_T("93732717"));
+	m_edtUsername.SetWindowText(_T("shzhqiu@hotmail.com"));
+	m_edtUserPwd.SetWindowText(_T("93732717"));
 
 
 #endif // _DEBUG
@@ -328,16 +351,24 @@ void CMiniBlogDlg::OnBnClickedButtonAddUser()
 {
 	
 	CString strName;
-	m_Username.GetWindowText(strName);
+	m_edtUsername.GetWindowText(strName);
 	CString strPwd;
-	m_UserPwd.GetWindowText(strPwd);
+	m_edtUserPwd.GetWindowText(strPwd);
+
 	if (strName.GetLength() <10 || strPwd.GetLength() <= 5)
 	{
-		AfxMessageBox(L"请正确输入帐号和密码",MB_ICONINFORMATION);
+		AfxMessageBox(_T("请正确输入帐号和密码"),MB_ICONINFORMATION);
 		return;
 	}
-
+	if (IsUserAdded(strName.GetBuffer()))
+	{
+		TCHAR szTip[MAX_PATH] = {};
+		_stprintf(szTip,_T("%s 已经添加过了。"),strName.GetBuffer());
+		AfxMessageBox(szTip,MB_ICONINFORMATION);
+		return;
+	}
 	AddFansToGrid(strName,strPwd);
+	EnableAddUser(FALSE);
 
 	TASK_PARAM tp = {0};
 	tp.dwTaskType = ACT_LOGIN_SINA;
@@ -348,13 +379,23 @@ void CMiniBlogDlg::OnBnClickedButtonAddUser()
 
 	// TODO: Add your control notification handler code here
 }
+void CMiniBlogDlg::EnableAddUser(BOOL bEnable)
+{
+	m_btnAddUser.EnableWindow(bEnable);
+	m_edtUsername.EnableWindow(bEnable);
+	m_edtUserPwd.EnableWindow(bEnable);
+
+}
 void CMiniBlogDlg::AddFansToGrid(LPCTSTR lpName,LPCTSTR lpPWD)
 {
 	int nRow = m_Grid.GetRowCount();
 	m_Grid.InsertRow(_T("test"));
 	GV_ITEM Item;
 	CString str;
-
+	USERINFO uinfo;
+	_tcscpy(uinfo.szName,lpName);
+	_tcscpy(uinfo.szPWD,lpPWD);
+	m_vtUserList.push_back(uinfo);
 	Item.mask = GVIF_TEXT;
 	Item.row = nRow;
 	for (int i = 0; i <GRID_ROW_COUNT;++i)
@@ -374,9 +415,9 @@ void CMiniBlogDlg::AddFansToGrid(LPCTSTR lpName,LPCTSTR lpPWD)
 // 			break;
 		case 2:
 			Item.strText = _T("登录中...");
-			m_Grid.SetItemState(nRow,i, m_Grid.GetItemState(nRow,i) & ~GVIS_READONLY);
-			m_Grid.Invalidate();
-			m_Grid.SetCellType(nRow,i, RUNTIME_CLASS(CGridCellCheck));
+			//m_Grid.SetItemState(nRow,i, m_Grid.GetItemState(nRow,i) & ~GVIS_READONLY);
+			//m_Grid.Invalidate();
+			//m_Grid.SetCellType(nRow,i, RUNTIME_CLASS(CGridCellCheck));
 			break;
 		}
 		COLORREF clr = RGB(rand()%128 + 128, rand()%128 + 128, rand()%128 + 128);
@@ -384,9 +425,9 @@ void CMiniBlogDlg::AddFansToGrid(LPCTSTR lpName,LPCTSTR lpPWD)
 		Item.crFgClr = RGB(255,0,0);    // or - m_Grid.SetItemFgColour(row, col, RGB(255,0,0));				    
 		Item.mask    |= (GVIF_BKCLR|GVIF_FGCLR);
 		m_Grid.SetItem(&Item);
-
+		
 	}
-	m_Grid.AutoSize();
+	m_Grid.Refresh();
 
 }
 
@@ -520,4 +561,75 @@ void CMiniBlogDlg::OnClose()
 {
 	// TODO: Add your message handler code here and/or call default
 	CDialogEx::OnClose();
+}
+void CMiniBlogDlg::SetUserStatus(USERINFO *pui,int nStatus)
+{
+	if (!pui)
+		return;
+	
+	for (int i = 0; i < m_Grid.GetRowCount();++i)
+	{
+		CString strName = m_Grid.GetItemText(i,1);
+		strName.Trim();
+		if (_tcsicmp(strName.GetBuffer(),pui->szName) == 0)
+		{
+			switch(nStatus)
+			{
+			case  SINA_LOGIN_SUCCESS:
+				{
+					m_Grid.SetItemText(i,2,_T("登录成功"));
+				}
+				break;
+			case   SINA_PWD_ERROR:
+				{
+					m_Grid.SetItemText(i,2,_T("密码错误"));
+				}
+				break;
+			case   SINA_NO_WEIBO:
+				{
+					m_Grid.SetItemText(i,2,_T("未开通微博"));
+				}
+				break;
+			default:
+				{
+					m_Grid.SetItemText(i,2,_T("登录失败，错误类型还不知道"));
+				}
+				break;
+			}
+			m_Grid.Refresh();
+			return;
+		}
+	}
+}
+
+LRESULT CMiniBlogDlg::OnLoginStatus(WPARAM wParam, LPARAM lParam)
+{
+	//Do What ever you want
+	int nCode = (int)lParam;
+	USERINFO ui;
+	if (wParam)
+	{
+		memcpy((PVOID)&ui,(PVOID)wParam,sizeof(ui));
+	}
+	switch(nCode)
+	{
+
+	case SINA_PWD_ERROR:
+	case  SINA_LOGIN_SUCCESS:
+		{
+			SetUserStatus(&ui,nCode);
+		}
+		break;
+	case SINA_NONE:
+		{
+			EnableAddUser(TRUE);
+
+		}
+		break;
+	default:
+		break;
+
+	}
+	EnableAddUser(TRUE);
+	return 0;
 }

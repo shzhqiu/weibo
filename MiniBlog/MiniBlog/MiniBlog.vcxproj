@@ -100,6 +100,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ADTask.h" />
+    <ClInclude Include="AutoLock.h" />
     <ClInclude Include="GridCtrl\CellRange.h" />
     <ClInclude Include="GridCtrl\GridCell.h" />
     <ClInclude Include="GridCtrl\GridCellBase.h" />

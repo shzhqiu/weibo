@@ -1,4 +1,6 @@
 #pragma once
+#include "AutoLock.h"
+
 typedef struct tag_TASK_PARAM
 {
 	DWORD dwTaskType;
@@ -34,7 +36,13 @@ typedef enum tag_TASK_ACTION
 		
 	ACT_NULL
 }TASK_ACTION;
-
+typedef struct _tagUserInfo
+{
+	TCHAR szName[50];
+	TCHAR szUID[30];
+	TCHAR szPWD[50];
+	DWORD dwStatus;
+}USERINFO;
 class CTaskProcessBase;  
 class CTaskMgr
 {
@@ -49,7 +57,7 @@ private:
 private:
 	DWORD m_dwLastTick;
 	CTaskProcessBase *m_pSvr;
-	TASK_PARAM m_taskParam;
+
 
 };
 

@@ -21,12 +21,13 @@ void CTaskMgr::GetTask()
 	srand(GetTickCount());
 	int rnd = rand();
 	//m_pDB->AddFans("name","pwd");
-	TCHAR szPost[1024] = {0};
+/*	TCHAR szPost[1024] = {0};
 	_stprintf(szPost,_T("hello test %d"),rnd);
 	ZeroMemory(&m_taskParam,sizeof(m_taskParam));
 	m_taskParam.dwTaskType = ACT_POST_SINA;
 	_tcscpy(m_taskParam.post.szContent,szPost);
 	m_pSvr->AddTask(&m_taskParam);
+	*/
 }
 
 BOOL CTaskMgr::CheckElapsed()

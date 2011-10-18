@@ -12,6 +12,8 @@
 
 
 
+
+
 // CMiniBlogApp
 
 BEGIN_MESSAGE_MAP(CMiniBlogApp, CWinApp)
