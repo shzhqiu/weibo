@@ -194,6 +194,7 @@ BOOL CMiniBlogDlg::InitUI()
 	if (!m_pSinaSvr)
 		return FALSE;
 	m_pSinaSvr = new CSinaSvr(GetSafeHwnd());
+	m_pADsvr   = new CADTask();
 	m_pTaskMgr->SetSvr(m_pSinaSvr);
 	m_pSinaSvr->CreateFromControl(this,IDC_STATIC_BROWSER);
 	InitGrid();
@@ -303,11 +304,17 @@ void CMiniBlogDlg::OnBnClickedButton1Test()
 	//SetTimer(TIMER_AUTO_START,1000*60,NULL);
 
 	TASK_PARAM tp = {0};
+	/*
 	tp.dwTaskType = ACT_LOGIN_SINA;
 	_tcscpy(tp.user.szUserName,_T("shzhqiu@hotmail.com"));
 	_tcscpy(tp.user.szUserPwd,_T("93732717"));
 
 	m_pSinaSvr->AddTask(&tp);
+	*/
+	tp.dwTaskType = ACT_CLICK_AD;
+	_tcscpy(tp.ad.szURL,_T("http://taourl.com/p9i94"));
+	
+	m_pADsvr->AddTask(&tp);
 
 	// TODO: Add your control notification handler code here
 }

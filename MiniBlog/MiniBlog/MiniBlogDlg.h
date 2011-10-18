@@ -12,6 +12,7 @@
 #include "GridCtrl/GridCellDateTime.h"
 #include "TaskMgr.h"
 #include "SinaSvr.h"
+#include "ADTask.h"
 
 // CMiniBlogDlg dialog
 class CMiniBlogDlg : public CDialogEx
@@ -57,6 +58,7 @@ private:
 	void InitClientID();
 private:
 	CSinaSvr	 *m_pSinaSvr;
+	CADTask		 *m_pADsvr;
 	CTaskMgr     *m_pTaskMgr;
 	CSQLiteTool *m_pDB;
 	CGridCtrl	m_Grid;
