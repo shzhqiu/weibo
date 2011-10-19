@@ -105,9 +105,6 @@
     <ClInclude Include="WeiboServiceBase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SQLiteTool.h">
-      <Filter>sqlite</Filter>
-    </ClInclude>
     <ClInclude Include="SinaSvr.h">
       <Filter>Sina</Filter>
     </ClInclude>
@@ -125,6 +122,12 @@
     </ClInclude>
     <ClInclude Include="AutoLock.h">
       <Filter>PubTool</Filter>
+    </ClInclude>
+    <ClInclude Include="SQLiteBase.h">
+      <Filter>sqlite</Filter>
+    </ClInclude>
+    <ClInclude Include="SinaSQLTool.h">
+      <Filter>sqlite</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -179,9 +182,6 @@
     <ClCompile Include="WebBrowser.cpp">
       <Filter>ThirdPart</Filter>
     </ClCompile>
-    <ClCompile Include="SQLiteTool.cpp">
-      <Filter>sqlite</Filter>
-    </ClCompile>
     <ClCompile Include="SinaSvr.cpp">
       <Filter>Sina</Filter>
     </ClCompile>
@@ -196,6 +196,12 @@
     </ClCompile>
     <ClCompile Include="ADTask.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SQLiteBase.cpp">
+      <Filter>sqlite</Filter>
+    </ClCompile>
+    <ClCompile Include="SinaSQLTool.cpp">
+      <Filter>sqlite</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

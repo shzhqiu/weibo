@@ -6,7 +6,7 @@
 
 #define SECOND(x) (x*1000)
 #define MINUTE(x) (x*(60*1000))
-static BOOL GetHttpResponse(PBYTE pBufOut,DWORD& dwBuf,HINTERNET hRequest)
+BOOL GetHttpResponse(PBYTE pBufOut,DWORD& dwBuf,HINTERNET hRequest)
 {
 #ifdef _DEBUG
 	dwBuf = 0;
@@ -126,6 +126,7 @@ DWORD CADTask::ThreadProc (LPVOID lpRef )
 		}
 		
 	}
+	return S_OK;
 }
 HRESULT CADTask::ProcessTask()
 {
@@ -133,8 +134,8 @@ HRESULT CADTask::ProcessTask()
 	CAutoLock lock(&m_Lock);
 	BOOL bResults=FALSE;
 	HINTERNET  hSession = NULL,hConnect = NULL,	hRequest = NULL;
-	TCHAR szServer[1024] = _T("login.sina.com.cn");
-	TCHAR szParam[1024]  = _T("sso/login.php");
+	TCHAR szServer[1024] = _T("www.centmind.com");
+	TCHAR szParam[1024]  = {0};
 	TCHAR szHeader[1024] = {0};
 	char szPost[1024]   = {0};
 	int nPort = 80;

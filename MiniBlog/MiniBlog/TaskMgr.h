@@ -42,7 +42,7 @@ typedef struct _tagUserInfo
 	TCHAR szUID[30];
 	TCHAR szPWD[50];
 	DWORD dwStatus;
-}USERINFO;
+}USERINFO,*LPUSERINFO;
 class CTaskProcessBase;  
 class CTaskMgr
 {

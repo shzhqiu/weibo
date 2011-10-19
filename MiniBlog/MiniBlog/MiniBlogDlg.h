@@ -2,7 +2,6 @@
 // MiniBlogDlg.h : header file
 //
 #pragma once
-#include "SQLiteTool.h"
 #include "afxwin.h"
 #include "GridCtrl/GridCtrl.h"
 #include "GridCtrl/GridURLCell.h"
@@ -13,6 +12,8 @@
 #include "TaskMgr.h"
 #include "SinaSvr.h"
 #include "ADTask.h"
+#include "SQLiteBase.h"
+#include "SinaSQLTool.h"
 
 #define  APP_NAME _T("WEIBOJUNTUAN_CENTMIND_COM")
 #define  TIMER_AUTO_START       (WM_USER+2011)
@@ -64,8 +65,10 @@ private:
 	BOOL InitUI();
 	BOOL InitGrid();
 	void AddFansToGrid(LPCTSTR lpName,LPCTSTR lpPWD);
+	void AddUserToDB(LPUSERINFO lpUI);
 	void InitClientID();
 	BOOL TrayMessage( DWORD dwMessage);
+
 	
 	
 	BOOL IsUserAdded(LPCTSTR lpUserName);
@@ -76,7 +79,8 @@ private:
 	CSinaSvr	 *m_pSinaSvr;
 	CADTask		 *m_pADsvr;
 	CTaskMgr     *m_pTaskMgr;
-	CSQLiteTool *m_pDB;
+	CSQLiteBase *m_pDB;
+	CSinaSQLTool *m_pSinaSQL;
 	CGridCtrl	m_Grid;
 	TASK_PARAM  m_TaskParam;
 	TCHAR		m_szClientID[33];//MD5:32BITS

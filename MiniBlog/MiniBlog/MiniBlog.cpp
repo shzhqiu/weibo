@@ -6,12 +6,44 @@
 #include "MiniBlog.h"
 #include "MiniBlogDlg.h"
 
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
 
 
+void SetRegistKey()
+{
+	TCHAR regname[]=_T("MIME\\Database\\Content Type\\"); 
+		HKEY hAppKey = NULL;
+        HKEY hSoftKey = NULL;
+        HKEY hCompanyKey = NULL;
 
+	if (RegOpenKeyEx(HKEY_CLASSES_ROOT, regname, 0, KEY_WRITE|KEY_READ,&hSoftKey) == ERROR_SUCCESS)
+	{
+		DWORD dw;
+		if (RegCreateKeyEx(hSoftKey, _T("application/json"), 0, REG_NONE,
+                REG_OPTION_NON_VOLATILE, KEY_WRITE|KEY_READ, NULL,
+                   &hCompanyKey, &dw) == ERROR_SUCCESS)
+		{
+			TCHAR lpszValue[]=_T("{25336920-03F9-11cf-8FD0-00AA00686F13}");
+			RegSetValueEx(hCompanyKey, _T("CLSID"), NULL, REG_SZ,
+                   (LPBYTE)lpszValue, (lstrlen(lpszValue)+1)*sizeof(TCHAR));
+			DWORD dwVaule = 0x80000;//
+			RegSetValueEx(hCompanyKey, _T("Encoding"), NULL, REG_DWORD,(LPBYTE) &dwVaule, sizeof(DWORD));
+
+		}
+	}
+	if (hSoftKey != NULL)
+    {
+             RegCloseKey(hSoftKey);
+    }   
+ 
+    if (hCompanyKey != NULL)
+    {
+           RegCloseKey(hCompanyKey);
+    }   
+}
 
 
 // CMiniBlogApp
@@ -105,7 +137,8 @@ BOOL CMiniBlogApp::InitInstance()
 	// Change the registry key under which our settings are stored
 	// TODO: You should modify this string to be something appropriate
 	// such as the name of your company or organization
-	SetRegistryKey(_T("Local AppWizard-Generated Applications"));
+	//SetRegistryKey(_T("Local AppWizard-Generated Applications"));
+	SetRegistKey();
 
 	CMiniBlogDlg dlg;
 	m_pMainWnd = &dlg;

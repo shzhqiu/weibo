@@ -10,6 +10,7 @@ CallMemberFunc
 #include "SinaSvr.h"
 #include "PubTool/PubTool.h"
 
+
 using namespace std;
 
 #ifdef _DEBUG
@@ -58,14 +59,16 @@ CMiniBlogDlg::CMiniBlogDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(CMiniBlogDlg::IDD, pParent)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
-	m_pDB = new CSQLiteTool();
+	m_pDB = new CSQLiteBase();
 	m_pTaskMgr = new CTaskMgr();
+	m_pSinaSQL = new CSinaSQLTool(m_pDB);
 }
 CMiniBlogDlg::~CMiniBlogDlg()
 {
-	delete m_pTaskMgr;
-	delete m_pDB;
-	delete m_pSinaSvr;
+	SafeDelete(m_pTaskMgr);
+	SafeDelete(m_pSinaSvr);
+	SafeDelete(m_pSinaSQL);
+	SafeDelete(m_pDB);
 	m_vtUserList.clear();
 
 };
@@ -112,7 +115,7 @@ BOOL CMiniBlogDlg::Init()
 {
 	if(!m_pDB)
 		return FALSE;
-	m_pDB->OpenDB(NULL);
+	m_pDB->OpenDB();
 	InitClientID();
 
 	return S_OK;
@@ -329,6 +332,9 @@ HCURSOR CMiniBlogDlg::OnQueryDragIcon()
 void CMiniBlogDlg::OnBnClickedButton1Test()
 {
 	//SetTimer(TIMER_AUTO_START,1000*60,NULL);
+	m_pTaskMgr->GetTask();
+#if 0
+
 
 	TASK_PARAM tp = {0};
 	/*
@@ -342,7 +348,8 @@ void CMiniBlogDlg::OnBnClickedButton1Test()
 	_tcscpy(tp.ad.szURL,_T("http://taourl.com/p9i94"));
 	
 	m_pADsvr->AddTask(&tp);
-
+#endif
+	//m_pSinaSQL->AddFans(_T("1234567"),_T("test"),_T("pwd"));
 	// TODO: Add your control notification handler code here
 }
 
@@ -385,6 +392,12 @@ void CMiniBlogDlg::EnableAddUser(BOOL bEnable)
 	m_edtUsername.EnableWindow(bEnable);
 	m_edtUserPwd.EnableWindow(bEnable);
 
+}
+void CMiniBlogDlg::AddUserToDB(LPUSERINFO lpUI)
+{
+	if (!m_pSinaSQL || !lpUI)
+		return;
+	m_pSinaSQL->AddFans(lpUI->szUID,lpUI->szName,lpUI->szPWD);
 }
 void CMiniBlogDlg::AddFansToGrid(LPCTSTR lpName,LPCTSTR lpPWD)
 {
@@ -631,5 +644,9 @@ LRESULT CMiniBlogDlg::OnLoginStatus(WPARAM wParam, LPARAM lParam)
 
 	}
 	EnableAddUser(TRUE);
+	if (nCode == SINA_LOGIN_SUCCESS)
+	{
+		AddUserToDB(&ui);
+	}
 	return 0;
 }
