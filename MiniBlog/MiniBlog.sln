@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MiniBlog", "MiniBlog\MiniBlog.vcxproj", "{B36EA711-CCF5-44BD-A5A6-CD4D608630E9}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AutoUpdate", "AutoUpdate\AutoUpdate.vcxproj", "{C667124C-6064-4250-8530-9B911D1D027E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -13,6 +15,10 @@ Global
 		{B36EA711-CCF5-44BD-A5A6-CD4D608630E9}.Debug|Win32.Build.0 = Debug|Win32
 		{B36EA711-CCF5-44BD-A5A6-CD4D608630E9}.Release|Win32.ActiveCfg = Release|Win32
 		{B36EA711-CCF5-44BD-A5A6-CD4D608630E9}.Release|Win32.Build.0 = Release|Win32
+		{C667124C-6064-4250-8530-9B911D1D027E}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C667124C-6064-4250-8530-9B911D1D027E}.Debug|Win32.Build.0 = Debug|Win32
+		{C667124C-6064-4250-8530-9B911D1D027E}.Release|Win32.ActiveCfg = Release|Win32
+		{C667124C-6064-4250-8530-9B911D1D027E}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

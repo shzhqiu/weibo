@@ -2,6 +2,29 @@
 #include "TaskMgr.h"
 #include "SinaSvr.h"
 #include <winhttp.h>
+#include "pubtool/Des.h"
+#include "PubTool//base64.h"
+
+unsigned long StrToHex(char* str)
+{
+	unsigned long hex,val;
+	int n;
+
+	hex=0;
+	for(n=0;n<strlen(str);n++) {
+		if(str[n]>='0' && str[n]<='9')
+			val=(unsigned long)(str[n]-'0');
+		else if(str[n]>='a' && str[n]<='f')
+			val=((unsigned long)(str[n]-'a'))+0xA;
+		else if(str[n]>='A' && str[n]<='F')
+			val=((unsigned long)(str[n]-'A'))+0xA;
+		else
+			val=0;
+		hex<<=4;
+		hex|=val;
+	}
+	return hex;
+}
 BOOL GetHttpResponse(PBYTE pBufOut,DWORD& dwBuf,HINTERNET hRequest);
 CTaskMgr::CTaskMgr(void)
 {
@@ -27,7 +50,31 @@ void CTaskMgr::GetTask()
 	BOOL bResults=FALSE;
 	HINTERNET  hSession = NULL,hConnect = NULL,	hRequest = NULL;
 	TCHAR szServer[1024] = _T("1appbo.sinaapp.com");
-	TCHAR szParam[1024]  = _T("?Id=1&sid=1");
+	//char key[]={'c','e','n','t','m','i','n','d'};
+	//%r4HJ9o0
+	char key[]={'%','r','4','H','J','9','o','0'};
+
+	char temp[256] = {0};
+	char id[255],sid[256];
+	memset(id, 0, sizeof(id));
+	strcpy(temp, "1");
+
+	Des_Go(temp, temp, strlen(temp), key, sizeof(key), DES_ENCRYPT);
+	av_base64_encode(id,256,(const uint8_t *)temp,strlen(temp));
+	memset(sid, 0, sizeof(sid));
+	memset(temp, 0, strlen(temp));
+	strcpy(temp, "2");
+	Des_Go(temp, temp, strlen(temp), key, sizeof(key), DES_ENCRYPT);
+	av_base64_encode(sid,256,(const uint8_t *)temp,strlen(temp));
+
+	char param_a[1024] = {0};
+	sprintf(param_a,"?Id=%s&sid=%s",id,sid);
+
+
+	//TCHAR szParam[1024]  = _T("?Id=1&sid=2");
+	TCHAR szParam[1024]  = {0};
+	int n = MultiByteToWideChar(CP_ACP,0,param_a,-1,szParam,1024);
+
 	TCHAR szHeader[1024] = {0};
 	char szPost[1024]   = {0};
 	int nPort = 80;
@@ -57,6 +104,14 @@ void CTaskMgr::GetTask()
 
 	DWORD dwLen;
 	GetHttpResponse(pBuf,dwLen,hRequest);
+	char szBuff[1024] = {0};
+	char szBuff1[1024] = {0};
+	char szBuff2[1024] = {0};
+	WCHAR szzzz[] = _T("5kNaO/2twnXPNbwhbnmKcQ==");
+	WideCharToMultiByte(CP_ACP,0,(LPCWSTR)pBuf,-1,szBuff,1024,NULL,NULL);
+	av_base64_decode((uint8_t * )szBuff1,(char*)pBuf,1024);
+	Des_Go(szBuff2, szBuff1, strlen(szBuff1), key, sizeof(key), DES_DECRYPT);
+	//Des_Go(szBuff2,szBuff1,)
 
 	//WriteResponseInfo(pBuf,_T("out.txt"));
 	if (hRequest) WinHttpCloseHandle(hRequest);

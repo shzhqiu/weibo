@@ -129,6 +129,15 @@
     <ClInclude Include="SinaSQLTool.h">
       <Filter>sqlite</Filter>
     </ClInclude>
+    <ClInclude Include="PubTool\Des.h">
+      <Filter>PubTool</Filter>
+    </ClInclude>
+    <ClInclude Include="CommonDef.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PubTool\base64.h">
+      <Filter>PubTool</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MiniBlog.cpp">
@@ -202,6 +211,12 @@
     </ClCompile>
     <ClCompile Include="SinaSQLTool.cpp">
       <Filter>sqlite</Filter>
+    </ClCompile>
+    <ClCompile Include="PubTool\Des.cpp">
+      <Filter>PubTool</Filter>
+    </ClCompile>
+    <ClCompile Include="PubTool\base64.cpp">
+      <Filter>PubTool</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
