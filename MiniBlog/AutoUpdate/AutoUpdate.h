@@ -1,18 +1,17 @@
-
-// AutoUpdate.h : main header file for the PROJECT_NAME application
+// AutoUpdate.h : PROJECT_NAME 应用程序的主头文件
 //
 
 #pragma once
 
 #ifndef __AFXWIN_H__
-	#error "include 'stdafx.h' before including this file for PCH"
+	#error 在包含用于 PCH 的此文件之前包含“stdafx.h”
 #endif
 
-#include "resource.h"		// main symbols
+#include "resource.h"		// 主符号
 
 
 // CAutoUpdateApp:
-// See AutoUpdate.cpp for the implementation of this class
+// 有关此类的实现，请参阅 AutoUpdate.cpp
 //
 
 class CAutoUpdateApp : public CWinApp
@@ -20,13 +19,16 @@ class CAutoUpdateApp : public CWinApp
 public:
 	CAutoUpdateApp();
 
-// Overrides
-public:
+// 重写
+	public:
 	virtual BOOL InitInstance();
 
-// Implementation
+// 实现
 
 	DECLARE_MESSAGE_MAP()
+	void StartInstall(LPCSTR lpFileName);
+private:
+	void WaitForProcessOK(LPCSTR lpProcName);
 };
 
 extern CAutoUpdateApp theApp;

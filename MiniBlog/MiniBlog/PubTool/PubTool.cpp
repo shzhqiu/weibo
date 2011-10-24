@@ -6,15 +6,86 @@
 
 #pragma comment(lib,"netapi32.lib")
 
-CPubTool::CPubTool(void)
+#include <winhttp.h>
+#pragma comment (lib,"winhttp.lib")
+
+#define HTTP_HEADER _T("http://")
+#define HTTP_HEADERLEN 7
+
+BOOL MyParseURL(LPCTSTR pstrURL,LPTSTR pServer, LPTSTR pObject, int & nPort)
 {
+	ASSERT(pstrURL != NULL);
+	if (pstrURL == NULL)
+		return FALSE;
+	CString strURL = pstrURL;
+	CString strS;
+	CString strO;
+	if (strURL.Find(HTTP_HEADER,0) < 0)
+	{
+		int nPos1 = strURL.Find(_T("/"));
+		nPort = 80;
+		strS = strURL.Left(nPos1);
+		_stprintf(pServer,_T("%s"),strS.GetBuffer());
+		CString strObj = strURL.Right(strURL.GetLength() - nPos1-1);
+		_stprintf(pObject,_T("%s"),strObj.GetBuffer());
+		
+	}
+	else
+	{
+
+		int nPos = strURL.Find(_T(":"),HTTP_HEADERLEN + 1);
+		int nPos1 = strURL.Find(_T("/"),HTTP_HEADERLEN + 1);
+
+		if(nPos < 0)
+		{
+			nPort = 80;
+			strS = strURL.Mid(HTTP_HEADERLEN,nPos1-HTTP_HEADERLEN);
+			_stprintf(pServer,_T("%s"),strS.GetBuffer());
+		}
+		else
+		{
+			CString strPort;
+			strPort = strURL.Mid(nPos+1,nPos1-nPos-1);
+			nPort = _tstoi(strPort.GetBuffer());
+			strS = strURL.Mid(HTTP_HEADERLEN,nPos-HTTP_HEADERLEN);
+			_stprintf(pServer,_T("%s"),strS.GetBuffer());
+
+		}
+		CString strObj = strURL.Right(strURL.GetLength() - nPos1-1);
+		_stprintf(pObject,_T("%s"),strObj.GetBuffer());
+	}
+
+
+	return TRUE;
+}
+BOOL GetHttpResponse(PBYTE pBufOut,DWORD& dwBuf,HINTERNET hRequest)
+{
+
+	dwBuf = 0;
+	DWORD dwSize = 0;
+	BOOL bResults = WinHttpReceiveResponse( hRequest, NULL);
+	if(bResults)
+	{
+		do
+		{
+			// Check for available data.
+			dwSize = 0;
+			bResults = WinHttpQueryDataAvailable( hRequest, &dwSize);
+
+			// Read the Data.
+			ZeroMemory(pBufOut+dwBuf, dwSize+1);
+			DWORD dwDownloaded=0;
+			WinHttpReadData( hRequest, (LPVOID)(pBufOut+dwBuf), 
+				dwSize, &dwDownloaded);
+			dwBuf+=dwDownloaded;
+		} while (dwSize > 0);
+	}
+	return bResults;
+
 }
 
 
-CPubTool::~CPubTool(void)
-{
-}
-int CPubTool::GetMAC(LPTSTR  pMac,int index/* = 0*/)
+int GetMAC(LPTSTR  pMac,int index/* = 0*/)
 {
    
 		NCB ncb;     
@@ -76,10 +147,112 @@ int CPubTool::GetMAC(LPTSTR  pMac,int index/* = 0*/)
 
 
 }
-char *CPubTool::GetMD5(char * p)
+char *GetMD5(char * p)
 {
 	char *pRetString = NULL;
 	md5wrapper md5;
 	pRetString = md5.getHashFromString(p);
 	return pRetString;
+}
+BOOL CheckForUpdate()
+{
+	PBYTE pBuf = HttpGet(SERVER_UPDATE_URL);
+	float fVer = atof((char*)pBuf);
+	if (fVer > CURRENT_VERSION)
+	{
+		return TRUE;
+	}
+	else
+		return FALSE;
+}
+PBYTE HttpGet(LPTSTR lpURL)
+{
+	PBYTE pBuf = new BYTE[1024*1024];
+	BOOL bResults = FALSE;
+	HINTERNET  hSession = NULL,hConnect = NULL,	hRequest = NULL;
+	TCHAR szServer[1024] = _T("www.centmind.com");
+	TCHAR szParam[1024]  = {0};
+	TCHAR szHeader[1024] = {0};
+	char szPost[1024]   = {0};
+	int nPort = 80;
+
+	MyParseURL(lpURL,szServer,szParam,nPort);
+
+	hSession = WinHttpOpen(0,  
+		WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
+		WINHTTP_NO_PROXY_NAME, 
+		WINHTTP_NO_PROXY_BYPASS, 0 );
+
+	if(hSession)
+		WinHttpSetTimeouts( hSession, 30000, 60000, 30000, 30000);
+
+	if( hSession )
+		hConnect = WinHttpConnect( hSession,szServer,nPort, 0 );
+
+	if (hConnect)
+		hRequest = WinHttpOpenRequest( hConnect, L"GET", szParam, 
+		NULL, WINHTTP_NO_REFERER, 
+		WINHTTP_DEFAULT_ACCEPT_TYPES, 
+		0);
+	int nLen = strlen(szPost);
+	// Send a Request.
+	if (hRequest) 
+		bResults = WinHttpSendRequest( hRequest, szHeader,-1, szPost, nLen,nLen,0);
+
+	DWORD dwLen;
+	GetHttpResponse(pBuf,dwLen,hRequest);
+
+	//WriteResponseInfo(pBuf,_T("out.txt"));
+	if (hRequest) WinHttpCloseHandle(hRequest);
+	if (hConnect) WinHttpCloseHandle(hConnect);
+	if (hSession) WinHttpCloseHandle(hSession);
+
+	
+	return pBuf;
+
+}
+void StartUpdate(LPCTSTR lpUpdateEXE)
+{
+
+	STARTUPINFO si;
+	PROCESS_INFORMATION pi;
+
+	ZeroMemory( &si, sizeof(si) );
+	si.cb = sizeof(si);
+	ZeroMemory( &pi, sizeof(pi) );
+
+	CHAR temp = _T('\"');
+	CString strCmdLine;
+	strCmdLine = CString(temp) + lpUpdateEXE + CString(temp);
+	CHAR* p_CmdLine;
+	//p_CmdLine=strCmdLine.GetBuffer(strCmdLine.GetLength());
+	if( !CreateProcess( NULL, // No module name (use command line). 
+		strCmdLine.GetBuffer(),		  // Command line. 
+		NULL,             // Process handle not inheritable. 
+		NULL,             // Thread handle not inheritable. 
+		FALSE,            // Set handle inheritance to FALSE. 
+		0,                // No creation flags. 
+		NULL,             // Use parent's environment block. 
+		NULL,             // Use parent's starting directory. 
+		&si,              // Pointer to STARTUPINFO structure.
+		&pi )             // Pointer to PROCESS_INFORMATION structure.
+		) 
+	{
+		//AfxMessageBox( "CreateProcess failed." );
+		return;
+	}
+	// Wait until child process exits.
+	WaitForSingleObject( pi.hProcess, INFINITE);
+	// Close process and thread handles. 
+	CloseHandle( pi.hProcess );
+	CloseHandle( pi.hThread );
+}
+CString GetModuleDirectory(HMODULE hModule)
+{
+	CString strFilePath;
+	GetModuleFileName(hModule,strFilePath.GetBuffer(MAX_PATH),MAX_PATH);
+	strFilePath.ReleaseBuffer();
+	int iStart = strFilePath.ReverseFind('\\');
+	strFilePath = strFilePath.Mid(0,iStart + 1);
+	return strFilePath;	
 }

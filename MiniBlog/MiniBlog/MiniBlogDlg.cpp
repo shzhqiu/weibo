@@ -275,6 +275,20 @@ BOOL CMiniBlogDlg::OnInitDialog()
 	// TODO: Add extra initialization here
 	BOOL bRet = InitUI();
 	bRet |= Init();
+	{
+		BOOL bNeedUpdate = CheckForUpdate();
+		if (bNeedUpdate)
+		{
+			int nRet = AfxMessageBox(_T("检测到有新版本，是否要升级？"),MB_YESNO);
+			if (nRet == IDYES)
+			{
+				CString csFile = GetModuleDirectory(AfxGetInstanceHandle())+"AutoUpdate.exe";
+				StartUpdate(csFile);
+				
+				return FALSE;
+			}
+		}
+	}
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
 
@@ -485,13 +499,13 @@ void CMiniBlogDlg::OnSize(UINT nType, int cx, int cy)
 void CMiniBlogDlg::InitClientID()
 {
 	TCHAR szMAC[18];
-	CPubTool::GetMAC(szMAC);
+	GetMAC(szMAC);
 	TCHAR szMagic[100] = {0};
 	_stprintf(szMagic,_T("www.centmind.com/www.weibojuntuan.com/%s"),szMAC);
 
 	char cMagic[100] = {0};
 	WideCharToMultiByte(CP_ACP,0,szMagic,-1,cMagic,100,NULL,NULL);
-	char *cHash = CPubTool::GetMD5(cMagic);
+	char *cHash = GetMD5(cMagic);
 	MultiByteToWideChar(CP_ACP,0,cHash,-1,m_szClientID,33);
 
 	delete [] cHash;
@@ -566,6 +580,7 @@ int CMiniBlogDlg::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	// TODO:  Add your specialized creation code here
 	TrayMessage(NIM_ADD);
 	::SetProp(m_hWnd,   APP_NAME,   (HANDLE)1);  
+
 	return 0;
 }
 

@@ -37,7 +37,7 @@
 
 #include <afxcontrolbars.h>     // MFC support for ribbons and control bars
 
-
+#include "CommonDef.h"
 
 #define MAX_PATH 1024
 

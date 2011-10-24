@@ -1,40 +1,11 @@
 #include "StdAfx.h"
 #include "ADTask.h"
 #include <shlwapi.h>
-#include <winhttp.h>
-#pragma comment (lib,"winhttp.lib")
+
 
 #define SECOND(x) (x*1000)
 #define MINUTE(x) (x*(60*1000))
-BOOL GetHttpResponse(PBYTE pBufOut,DWORD& dwBuf,HINTERNET hRequest)
-{
-#ifdef _DEBUG
-	dwBuf = 0;
-	DWORD dwSize = 0;
-	BOOL bResults = WinHttpReceiveResponse( hRequest, NULL);
-	if(bResults)
-	{
-		do
-		{
-			// Check for available data.
-			dwSize = 0;
-			bResults = WinHttpQueryDataAvailable( hRequest, &dwSize);
 
-			// Read the Data.
-			ZeroMemory(pBufOut+dwBuf, dwSize+1);
-			DWORD dwDownloaded=0;
-			WinHttpReadData( hRequest, (LPVOID)(pBufOut+dwBuf), 
-				dwSize, &dwDownloaded);
-			dwBuf+=dwDownloaded;
-		} while (dwSize > 0);
-	}
-	return bResults;
-
-#else
-	return TRUE;
-#endif // _DEBUG
-
-}
 
 
 CADTask::CADTask(void)
@@ -56,45 +27,8 @@ CADTask::~CADTask(void)
 	CloseHandle(m_hThread);
 	CloseHandle(m_hEvent);
 }
-#define HTTP_HEADER _T("http://")
-#define HTTP_HEADERLEN 7
 
-BOOL MyParseURL(LPCTSTR pstrURL,LPTSTR pServer, LPTSTR pObject, int & nPort)
-{
-	ASSERT(pstrURL != NULL);
-	if (pstrURL == NULL)
-		return FALSE;
-	CString strURL = pstrURL;
-	CString strS;
-	CString strO;
-	if (strURL.Find(HTTP_HEADER,0) < 0)
-	{
-		return FALSE;
-	}
-	int nPos = strURL.Find(_T(":"),HTTP_HEADERLEN + 1);
-	int nPos1 = strURL.Find(_T("/"),HTTP_HEADERLEN + 1);
-	if(nPos < 0)
-	{
-			nPort = 80;
-			strS = strURL.Mid(HTTP_HEADERLEN,nPos1-HTTP_HEADERLEN);
-			_stprintf(pServer,_T("%s"),strS.GetBuffer());
-	}
-	else
-	{
-		CString strPort;
-		strPort = strURL.Mid(nPos+1,nPos1-nPos-1);
-		nPort = _tstoi(strPort.GetBuffer());
-		strS = strURL.Mid(HTTP_HEADERLEN,nPos-HTTP_HEADERLEN);
-		_stprintf(pServer,_T("%s"),strS.GetBuffer());
 
-	}
-
-	CString strObj = strURL.Right(strURL.GetLength() - nPos1-1);
-	_stprintf(pObject,_T("%s"),strObj.GetBuffer());
-	
-
-	return TRUE;
-}
 HRESULT CADTask::AddTask(LPTASK_PARAM lpTaskParam)
 {
 	CAutoLock lock(&m_Lock);
@@ -133,6 +67,9 @@ HRESULT CADTask::ProcessTask()
 	WaitForSingleObject(m_hEvent,INFINITE);
 	CAutoLock lock(&m_Lock);
 	BOOL bResults=FALSE;
+#if 0
+
+
 	HINTERNET  hSession = NULL,hConnect = NULL,	hRequest = NULL;
 	TCHAR szServer[1024] = _T("www.centmind.com");
 	TCHAR szParam[1024]  = {0};
@@ -172,5 +109,6 @@ HRESULT CADTask::ProcessTask()
     if (hSession) WinHttpCloseHandle(hSession);
 	
 	delete []pBuf;
+#endif
 	return S_OK;
 }
