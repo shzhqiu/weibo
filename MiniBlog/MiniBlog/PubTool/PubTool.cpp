@@ -221,10 +221,10 @@ void StartUpdate(LPCTSTR lpUpdateEXE)
 	si.cb = sizeof(si);
 	ZeroMemory( &pi, sizeof(pi) );
 
-	CHAR temp = _T('\"');
+	TCHAR temp = _T('\"');
 	CString strCmdLine;
 	strCmdLine = CString(temp) + lpUpdateEXE + CString(temp);
-	CHAR* p_CmdLine;
+	TCHAR* p_CmdLine;
 	//p_CmdLine=strCmdLine.GetBuffer(strCmdLine.GetLength());
 	if( !CreateProcess( NULL, // No module name (use command line). 
 		strCmdLine.GetBuffer(),		  // Command line. 

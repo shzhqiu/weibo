@@ -46,5 +46,5 @@ public:
 	static DWORD WINAPI DoRun(LPVOID lParam);
 private:
 	DWORD DoDownLoadThread(void);
-	BOOL DownloadFile(LPCSTR lpURL, LPCSTR lpFileXml);
+	BOOL DownloadFile(LPCTSTR lpURL, LPCTSTR lpFileXml);
 };

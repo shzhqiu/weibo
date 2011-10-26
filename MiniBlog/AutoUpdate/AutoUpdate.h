@@ -26,9 +26,11 @@ public:
 // й╣ож
 
 	DECLARE_MESSAGE_MAP()
-	void StartInstall(LPCSTR lpFileName);
+	void StartInstall(LPCTSTR lpFileName);
 private:
-	void WaitForProcessOK(LPCSTR lpProcName);
+	void WaitForProcessOK(LPCTSTR lpProcName);
+	BOOL CloseMainApp();
+	void LaunchMainApp(LPCTSTR lpFileName);
 };
 
 extern CAutoUpdateApp theApp;

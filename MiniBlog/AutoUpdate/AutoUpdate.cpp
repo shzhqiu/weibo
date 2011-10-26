@@ -6,10 +6,15 @@
 #include "AutoUpdateDlg.h"
 #include ".\autoupdate.h"
 #include <tlhelp32.h>
+#include "ZLibWrap/ZLibWrap.h"
+#pragma comment(lib,"ZLibWrap/ZLibWrap.lib")
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
+
+#define  MAIN_APP_SECRET     _T("WEIBOJUNTUAN_CENTMIND_COM")
 
 
 // CAutoUpdateApp
@@ -49,7 +54,7 @@ BOOL CAutoUpdateApp::InitInstance()
 
 	CString csServerURL = GetCommandLine();
 	{
-		int iIndex = csServerURL.Find(" ");
+		int iIndex = csServerURL.Find(_T(" "));
 		if(iIndex >= 0)
 		{
 			csServerURL = csServerURL.Mid(iIndex+1); 
@@ -70,10 +75,9 @@ BOOL CAutoUpdateApp::InitInstance()
 		// TODO: 在此放置处理何时用“取消”来关闭
 		//对话框的代码
 	}
-	
 	if(dlg.m_bFileOK)  //表示文件下载下来了
 	{
-		CString csFile = GetModuleDirectory()+"update.zip";
+		CString csFile = GetModuleDirectory()+UPDATE_PACKAGE;
 		StartInstall(csFile);
 	}
 
@@ -81,8 +85,46 @@ BOOL CAutoUpdateApp::InitInstance()
 	// 而不是启动应用程序的消息泵。
 	return FALSE;
 }
+BOOL CAutoUpdateApp::CloseMainApp()
+{
+	HANDLE   hSem   =   CreateSemaphore(NULL,   1,   1,   MAIN_APP_SECRET);   
 
-void CAutoUpdateApp::StartInstall(LPCSTR lpFileName)
+	int nCnt = 0;
+	//   信号量已存在？   
+	//   信号量存在，则程序已有一个实例运行   
+	if(GetLastError()   ==   ERROR_ALREADY_EXISTS)   
+	{   
+		//   关闭信号量句柄   
+		CloseHandle(hSem);   
+		//   寻找先前实例的主窗口   
+		HWND   hWndPrevious   =   ::GetWindow(::GetDesktopWindow(),GW_CHILD);   
+		while   (::IsWindow(hWndPrevious))   
+		{   
+			//   检查窗口是否有预设的标记?   
+			//   有，则是我们寻找的主窗   
+			if (::GetProp(hWndPrevious,   MAIN_APP_SECRET))   
+			{   
+				PostMessage(hWndPrevious,WM_CLOSE,NULL,NULL);
+				AfxMessageBox(_T("dddadafasdfas"),MB_RETRYCANCEL);
+				// find again
+				hWndPrevious   =   ::GetWindow(::GetDesktopWindow(),GW_CHILD);
+				nCnt ++;
+				if (nCnt > 10)
+				{
+					break;
+				}
+				continue;
+			}   
+			//   继续寻找下一个窗口   
+			hWndPrevious   =   ::GetWindow(hWndPrevious,GW_HWNDNEXT); 
+		}   
+
+	} 
+	else
+		CloseHandle(hSem);
+	return TRUE;
+}
+void CAutoUpdateApp::LaunchMainApp(LPCTSTR lpFileName)
 {
 	STARTUPINFO si;
 	PROCESS_INFORMATION pi;
@@ -91,10 +133,10 @@ void CAutoUpdateApp::StartInstall(LPCSTR lpFileName)
 	si.cb = sizeof(si);
 	ZeroMemory( &pi, sizeof(pi) );
 
-	char temp = '\"';
+	TCHAR temp = _T('\"');
 	CString strCmdLine;
 	strCmdLine = CString(temp) + lpFileName + CString(temp);
-	char* p_CmdLine;
+	TCHAR* p_CmdLine;
 	p_CmdLine=strCmdLine.GetBuffer(strCmdLine.GetLength());
 	if( !CreateProcess( NULL, // No module name (use command line). 
 		p_CmdLine,		  // Command line. 
@@ -116,17 +158,29 @@ void CAutoUpdateApp::StartInstall(LPCSTR lpFileName)
 	// Close process and thread handles. 
 	CloseHandle( pi.hProcess );
 	CloseHandle( pi.hThread );
-	return;
 }
 
-void CAutoUpdateApp::WaitForProcessOK(LPCSTR lpProcName)
+void CAutoUpdateApp::StartInstall(LPCTSTR lpFileName)
+{
+	CString strModuleDir = GetModuleDirectory();
+	CString strMainApp = strModuleDir + MAIN_APP_NAME;
+	CloseMainApp();
+	DeleteFile(strMainApp.GetBuffer());
+
+	ZWZipExtract(lpFileName,strModuleDir.GetBuffer());
+	LaunchMainApp(strMainApp.GetBuffer());
+	return;
+
+}
+
+void CAutoUpdateApp::WaitForProcessOK(LPCTSTR lpProcName)
 {
 	HANDLE hSnapShot=CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS,0);
 	PROCESSENTRY32 processInfo;
 	processInfo.dwSize=sizeof(PROCESSENTRY32);
 	while(Process32Next(hSnapShot,&processInfo)!=FALSE)
 	{
-		if(stricmp(processInfo.szExeFile,lpProcName) == 0)
+		if(_tcsicmp(processInfo.szExeFile,lpProcName) == 0)
 		{
 			HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS,FALSE,processInfo.th32ProcessID);
 			TerminateProcess((HANDLE)(hProcess),0);

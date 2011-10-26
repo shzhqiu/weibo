@@ -18,6 +18,8 @@
 #include <afxext.h>         // MFC 扩展
 #include <afxdisp.h>        // MFC 自动化类
 
+#define  UPDATE_PACKAGE _T("update.zip")
+#define  MAIN_APP_NAME  _T("MiniBlog.exe")
 
 #include <afxdtctl.h>		// Internet Explorer 4 公共控件的 MFC 支持
 #ifndef _AFX_NO_AFXCMN_SUPPORT

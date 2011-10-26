@@ -74,6 +74,7 @@ CMiniBlogApp theApp;
 
 BOOL CMiniBlogApp::InitInstance()
 {
+
 	HANDLE   hSem   =   CreateSemaphore(NULL,   1,   1,   APP_NAME);   
 
 	//   信号量已存在？   
@@ -88,7 +89,7 @@ BOOL CMiniBlogApp::InitInstance()
 		{   
 			//   检查窗口是否有预设的标记?   
 			//   有，则是我们寻找的主窗   
-			if (::GetProp(hWndPrevious,   m_pszExeName))   
+			if (::GetProp(hWndPrevious,   APP_NAME))   
 			{   
 				//   主窗口已最小化，则恢复其大小   
 				if   (::IsIconic(hWndPrevious))   
@@ -162,6 +163,7 @@ BOOL CMiniBlogApp::InitInstance()
 		delete pShellManager;
 	}
 
+	CloseHandle(hSem);
 	// Since the dialog has been closed, return FALSE so that we exit the
 	//  application, rather than start the application's message pump.
 	return FALSE;

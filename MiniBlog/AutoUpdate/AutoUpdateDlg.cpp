@@ -101,15 +101,56 @@ LRESULT CAutoUpdateDlg::OnPositionMessage(WPARAM wParam,LPARAM lParam)
 {
 	int iPer = 0;
 	if(m_dwTotalSize != 0) iPer = (m_dwDownloadedSize*100)/m_dwTotalSize;
-	CString csPercent; csPercent.Format("%d",iPer); csPercent = csPercent+"%";
+	CString csPercent; csPercent.Format(_T("%d"),iPer); csPercent = csPercent+_T("%");
 	m_ctPercentValue.SetWindowText(csPercent);
 	m_ctlProcess.SetRange(0,100);
 	m_ctlProcess.SetPos(iPer);
 	return 1;
 }
+#define  MAIN_APP_SECRET     _T("WEIBOJUNTUAN_CENTMIND_COM")
 
+BOOL CloseMainApp()
+{
+	HANDLE   hSem   =   CreateSemaphore(NULL,   1,   1,   MAIN_APP_SECRET);   
+
+	int nCnt = 0;
+	//   信号量已存在？   
+	//   信号量存在，则程序已有一个实例运行   
+	if(GetLastError()   ==   ERROR_ALREADY_EXISTS)   
+	{   
+		//   关闭信号量句柄   
+		CloseHandle(hSem);   
+		//   寻找先前实例的主窗口   
+		HWND   hWndPrevious   =   ::GetWindow(::GetDesktopWindow(),GW_CHILD);   
+		while   (::IsWindow(hWndPrevious))   
+		{   
+			//   检查窗口是否有预设的标记?   
+			//   有，则是我们寻找的主窗   
+			if (::GetProp(hWndPrevious,   MAIN_APP_SECRET))   
+			{   
+				PostMessage(hWndPrevious,WM_CLOSE,NULL,NULL);
+				AfxMessageBox(_T("dddadafasdfas"),MB_RETRYCANCEL);
+				// find again
+				hWndPrevious   =   ::GetWindow(::GetDesktopWindow(),GW_CHILD);
+				nCnt ++;
+				if (nCnt > 10)
+				{
+					break;
+				}
+				continue;
+			}   
+			//   继续寻找下一个窗口   
+			hWndPrevious   =   ::GetWindow(hWndPrevious,GW_HWNDNEXT); 
+		}   
+
+	} 
+	else
+		CloseHandle(hSem);
+	return TRUE;
+}
 LRESULT CAutoUpdateDlg::OnEndMessage(WPARAM wParam,LPARAM lParam)
 {
+	CloseMainApp();
 	OnCancel();
 	return 0;
 }
@@ -139,7 +180,7 @@ CString GetModuleDirectory()
 
 DWORD CAutoUpdateDlg::DoDownLoadThread(void)
 {
-	CString csCurDir = GetModuleDirectory()+"update.zip";
+	CString csCurDir = GetModuleDirectory()+UPDATE_PACKAGE;
 	if(DownloadFile(m_csDownloadURL,csCurDir))
 	{
 		m_bFileOK = TRUE;
@@ -148,7 +189,7 @@ DWORD CAutoUpdateDlg::DoDownLoadThread(void)
 }
 
 #define BLOCKSIZE 1024
-BOOL CAutoUpdateDlg::DownloadFile(LPCSTR lpURL,LPCSTR lpDestFile)
+BOOL CAutoUpdateDlg::DownloadFile(LPCTSTR lpURL,LPCTSTR lpDestFile)
 {
 	CFile cUdpFile; 
 	if(!cUdpFile.Open(lpDestFile,CFile::modeCreate|CFile::modeWrite|CFile::typeBinary|CFile::shareDenyWrite))
@@ -157,10 +198,10 @@ BOOL CAutoUpdateDlg::DownloadFile(LPCSTR lpURL,LPCSTR lpDestFile)
 	CInternetSession sessionDownload;
 	try
 	{
-		CHttpFile* pFile = (CHttpFile*)sessionDownload.OpenURL("http://weibodata-update.stor.sinaapp.com/MiniBlog.zip",1,INTERNET_FLAG_TRANSFER_BINARY|INTERNET_FLAG_RELOAD|INTERNET_FLAG_DONT_CACHE);
-		CString   query = "";
+		CHttpFile* pFile = (CHttpFile*)sessionDownload.OpenURL(_T("http://weibodata-update.stor.sinaapp.com/MiniBlog.zip"),1,INTERNET_FLAG_TRANSFER_BINARY|INTERNET_FLAG_RELOAD|INTERNET_FLAG_DONT_CACHE);
+		CString   query = _T("");
 		pFile->QueryInfo(HTTP_QUERY_CONTENT_LENGTH,query);
-		long file_len=atol(query);
+		long file_len=_ttol(query);
 		m_dwTotalSize = file_len;
 		PostMessage(WM_POSMESSAGE,0,0);
 		DWORD dwStatus;

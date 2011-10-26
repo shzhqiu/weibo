@@ -275,21 +275,7 @@ BOOL CMiniBlogDlg::OnInitDialog()
 	// TODO: Add extra initialization here
 	BOOL bRet = InitUI();
 	bRet |= Init();
-	{
-		BOOL bNeedUpdate = CheckForUpdate();
-		if (bNeedUpdate)
-		{
-			int nRet = AfxMessageBox(_T("检测到有新版本，是否要升级？"),MB_YESNO);
-			if (nRet == IDYES)
-			{
-				CString csFile = GetModuleDirectory(AfxGetInstanceHandle())+"AutoUpdate.exe";
-				StartUpdate(csFile);
-				
-				return FALSE;
-			}
-		}
-	}
-	return TRUE;  // return TRUE  unless you set the focus to a control
+	return bRet;// return TRUE  unless you set the focus to a control
 }
 
 void CMiniBlogDlg::OnSysCommand(UINT nID, LPARAM lParam)
@@ -466,6 +452,23 @@ void CMiniBlogDlg::OnTimer(UINT_PTR nIDEvent)
 	case TIMER_AUTO_START:
 		m_pTaskMgr->GetTask();
 		break;
+	case TIMER_DELAY_CHECK_VER:
+		{
+			KillTimer(TIMER_DELAY_CHECK_VER);
+			BOOL bNeedUpdate = CheckForUpdate();
+			if (bNeedUpdate)
+			{
+				int nRet = AfxMessageBox(_T("检测到有新版本，是否要升级？"),MB_YESNO);
+				if (nRet == IDYES)
+				{
+					CString csFile = GetModuleDirectory(AfxGetInstanceHandle())+_T("AutoUpdate.exe");
+				//	::PostMessage(m_hWnd,WM_CLOSE,NULL,NULL);
+					StartUpdate(csFile);
+
+				}
+			}
+		}
+		break;
 	default:
 		break;
 
@@ -580,6 +583,7 @@ int CMiniBlogDlg::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	// TODO:  Add your specialized creation code here
 	TrayMessage(NIM_ADD);
 	::SetProp(m_hWnd,   APP_NAME,   (HANDLE)1);  
+	SetTimer(TIMER_DELAY_CHECK_VER,1000,NULL);
 
 	return 0;
 }
