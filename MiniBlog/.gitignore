@@ -2,3 +2,7 @@
 *.sdf
 *.aps
 *.suo
+*.log
+*.pdb
+*.obj
+*.tlog
