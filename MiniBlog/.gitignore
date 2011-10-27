@@ -6,3 +6,6 @@
 *.pdb
 *.obj
 *.tlog
+*.idb
+*.pch
+Thumb.db
