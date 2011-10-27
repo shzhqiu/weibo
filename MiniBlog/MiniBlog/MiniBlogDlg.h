@@ -66,11 +66,13 @@ private:
 	BOOL Init();
 	BOOL InitUI();
 	BOOL InitGrid();
-	void AddFansToGrid(LPCTSTR lpName,LPCTSTR lpPWD);
+	void AddFansToGrid(LPCTSTR lpName,LPCTSTR lpStatus);
 	void AddUserToDB(LPUSERINFO lpUI);
 	void InitClientID();
 	BOOL TrayMessage( DWORD dwMessage);
+	void LoadDB();
 
+	void SetClintIDForTask(LPTASK_PARAM lptp);
 	
 	
 	BOOL IsUserAdded(LPCTSTR lpUserName);
@@ -87,6 +89,7 @@ private:
 	TASK_PARAM  m_TaskParam;
 	TCHAR		m_szClientID[33];//MD5:32BITS
 	std::vector<USERINFO> m_vtUserList;
+	USERINFO  m_CurUser;
 
 
 
@@ -99,4 +102,5 @@ public:
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnClose();
 	CButton m_btnAddUser;
+	afx_msg void OnBnClickedButtonSmartLogon();
 };

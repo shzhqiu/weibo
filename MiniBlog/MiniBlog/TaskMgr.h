@@ -4,6 +4,7 @@
 typedef struct tag_TASK_PARAM
 {
 	DWORD dwTaskType;
+	TCHAR szClientID[33];
 	union
 	{
 		struct{
@@ -33,9 +34,12 @@ typedef enum tag_TASK_ACTION
 	ACT_FORWARD_SINA,
 
 	ACT_CLICK_AD,
+	ACT_POST_AD,
+	ACT_GET_AD,
 		
 	ACT_NULL
 }TASK_ACTION;
+
 typedef struct _tagUserInfo
 {
 	TCHAR szName[50];

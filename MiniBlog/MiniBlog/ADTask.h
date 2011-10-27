@@ -10,9 +10,12 @@ public:
 public:
 	HRESULT AddTask(LPTASK_PARAM lpTaskParam);
 	static DWORD ThreadProc (LPVOID lpdwThreadParam );
-	BOOL	GetThreadStatus(){return m_bClose;}
+	BOOL	IsThreadClose(){return m_bClose;}
 private:
 	HRESULT ProcessTask();
+	HRESULT PostAD();
+	HRESULT ClickAD();
+	HRESULT GetAD();
 private:
 	HANDLE m_hThread;
 	HANDLE m_hEvent; 

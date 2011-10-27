@@ -99,8 +99,9 @@ void CSinaSvr::Login(LPCTSTR lpUserName,LPCTSTR lpPwd)
 
 	SetAction(ACT_LOGIN_SINA);
 	TCHAR szPost[1024]= {0};
-	_stprintf(szPost,_T("username=%s&password=%s&entry=miniblog&act=1&from=referer%3Awww_index"),lpUserName,lpPwd);
 	_stprintf(m_uiCurUserInfo.szName,_T("%s"),lpUserName);
+	_stprintf(m_uiCurUserInfo.szPWD,_T("%s"),lpPwd);
+	_stprintf(szPost,_T("username=%s&password=%s&entry=miniblog&act=1&from=referer%3Awww_index"),m_uiCurUserInfo.szName,m_uiCurUserInfo.szPWD);
 	int iSize = _tcslen(szPost);
 
 	CByteArray arr;
@@ -430,7 +431,7 @@ HRESULT CSinaSvr::GetUID()
 			{
 				nPos = str.Find(_T("'"),nPos);
 				nPos1 = str.Find(_T("'"),nPos+1);
-				str = str.Mid(nPos,nPos1-nPos);
+				str = str.Mid(nPos+1,nPos1-nPos-1);
 				_stprintf(m_uiCurUserInfo.szUID,_T("%s"),str.GetBuffer());
 				//_tcscpy(m_szCurUID,str.GetBuffer());
 			}

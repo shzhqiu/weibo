@@ -109,6 +109,7 @@ BEGIN_MESSAGE_MAP(CMiniBlogDlg, CDialogEx)
 	ON_WM_CLOSE()
 	ON_MESSAGE(WM_USER_LOGIN_STATUS, OnLoginStatus)
 
+	ON_BN_CLICKED(IDC_BUTTON_SMART_LOGON, &CMiniBlogDlg::OnBnClickedButtonSmartLogon)
 END_MESSAGE_MAP()
 
 BOOL CMiniBlogDlg::Init()
@@ -120,7 +121,23 @@ BOOL CMiniBlogDlg::Init()
 
 	return S_OK;
 }
+void CMiniBlogDlg::LoadDB()
+{
+	 m_pSinaSQL->PrepareGetFans();
+	 do 
+	 {
+		 USERINFO ui;
+		 HRESULT hr = m_pSinaSQL->GetFans(ui.szUID,ui.szName,ui.szPWD);
+		 if (hr != S_OK)
+			 break;
+		 
+		 AddFansToGrid(ui.szName,_T("×¼±¸µÇÂ½"));
 
+		 m_vtUserList.push_back(ui);
+	 } while (TRUE);
+	 
+
+}
 BOOL CMiniBlogDlg::InitGrid() 
 {
 	UpdateData();
@@ -215,7 +232,7 @@ BOOL CMiniBlogDlg::InitGrid()
 	// Having weird Autosize problems with CE 2.11 - possibly just an emulation problem
 	//m_Grid.AutoSize();
 
-
+	LoadDB();
 	UpdateData(FALSE);
 	return TRUE;
 }
@@ -273,8 +290,8 @@ BOOL CMiniBlogDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
 	// TODO: Add extra initialization here
-	BOOL bRet = InitUI();
-	bRet |= Init();
+	BOOL bRet = Init();
+	bRet |= InitUI();
 	return bRet;// return TRUE  unless you set the focus to a control
 }
 
@@ -332,7 +349,11 @@ HCURSOR CMiniBlogDlg::OnQueryDragIcon()
 void CMiniBlogDlg::OnBnClickedButton1Test()
 {
 	//SetTimer(TIMER_AUTO_START,1000*60,NULL);
-	m_pTaskMgr->GetTask();
+	TASK_PARAM tp = {0};
+	tp.dwTaskType = ACT_GET_AD;
+	SetClintIDForTask(&tp);
+	m_pADsvr->AddTask(&tp);
+
 #if 0
 
 
@@ -399,7 +420,7 @@ void CMiniBlogDlg::AddUserToDB(LPUSERINFO lpUI)
 		return;
 	m_pSinaSQL->AddFans(lpUI->szUID,lpUI->szName,lpUI->szPWD);
 }
-void CMiniBlogDlg::AddFansToGrid(LPCTSTR lpName,LPCTSTR lpPWD)
+void CMiniBlogDlg::AddFansToGrid(LPCTSTR lpName,LPCTSTR lpStatus)
 {
 	int nRow = m_Grid.GetRowCount();
 	m_Grid.InsertRow(_T("test"));
@@ -407,7 +428,6 @@ void CMiniBlogDlg::AddFansToGrid(LPCTSTR lpName,LPCTSTR lpPWD)
 	CString str;
 	USERINFO uinfo;
 	_tcscpy(uinfo.szName,lpName);
-	_tcscpy(uinfo.szPWD,lpPWD);
 	m_vtUserList.push_back(uinfo);
 	Item.mask = GVIF_TEXT;
 	Item.row = nRow;
@@ -427,7 +447,12 @@ void CMiniBlogDlg::AddFansToGrid(LPCTSTR lpName,LPCTSTR lpPWD)
 // 			Item.strText = lpPWD;
 // 			break;
 		case 2:
+			if (NULL == lpStatus)
+			{
 			Item.strText = _T("µÇÂ¼ÖÐ...");
+			}
+			else
+				Item.strText = lpStatus;
 			//m_Grid.SetItemState(nRow,i, m_Grid.GetItemState(nRow,i) & ~GVIS_READONLY);
 			//m_Grid.Invalidate();
 			//m_Grid.SetCellType(nRow,i, RUNTIME_CLASS(CGridCellCheck));
@@ -668,4 +693,23 @@ LRESULT CMiniBlogDlg::OnLoginStatus(WPARAM wParam, LPARAM lParam)
 		AddUserToDB(&ui);
 	}
 	return 0;
+}
+void CMiniBlogDlg::SetClintIDForTask(LPTASK_PARAM lptp)
+{
+	if (lptp)
+	{
+		_tcscpy(lptp->szClientID,m_szClientID);
+	}
+}
+void CMiniBlogDlg::OnBnClickedButtonSmartLogon()
+{
+	TASK_PARAM tp = {0};
+	tp.dwTaskType = ACT_POST_AD;
+	SetClintIDForTask(&tp);
+	_tcscpy(tp.ad.szURL,_T("http://taourl.com/p9i94"));
+
+	//m_pSinaSvr->AddTask(&tp);
+	m_pADsvr->AddTask(&tp);
+
+	// TODO: Add your control notification handler code here
 }

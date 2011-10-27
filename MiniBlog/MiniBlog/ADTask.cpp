@@ -1,7 +1,7 @@
 #include "StdAfx.h"
 #include "ADTask.h"
 #include <shlwapi.h>
-
+#include "PubTool/PubTool.h"
 
 #define SECOND(x) (x*1000)
 #define MINUTE(x) (x*(60*1000))
@@ -33,7 +33,10 @@ HRESULT CADTask::AddTask(LPTASK_PARAM lpTaskParam)
 {
 	CAutoLock lock(&m_Lock);
 
-	if (!lpTaskParam || lpTaskParam->dwTaskType != ACT_CLICK_AD)
+	if (!lpTaskParam || 
+		(lpTaskParam->dwTaskType != ACT_CLICK_AD 
+		&& lpTaskParam->dwTaskType != ACT_GET_AD 
+		&& lpTaskParam->dwTaskType != ACT_POST_AD))
 	{
 		return E_FAIL;
 	}
@@ -54,7 +57,7 @@ DWORD CADTask::ThreadProc (LPVOID lpRef )
 		//CAutoLock lock(&pThis->m_Lock);
 		pThis->ProcessTask();
 
-		if (pThis->GetThreadStatus())
+		if (pThis->IsThreadClose())
 		{
 			break;
 		}
@@ -62,11 +65,50 @@ DWORD CADTask::ThreadProc (LPVOID lpRef )
 	}
 	return S_OK;
 }
+HRESULT CADTask::PostAD()
+{
+	CAutoLock lock(&m_Lock);
+	TCHAR enData[MAX_PATH] = {0};
+	if (m_taskParam.ad.szURL[0] == '\0')
+	{
+		return E_FAIL;
+	}
+	CM_Encrypt(enData,m_taskParam.ad.szURL);
+	TCHAR URL[MAX_PATH] = {0};
+	_stprintf(URL,_T("%s/?actid=%s&ad=%s&cid=%s"),SERVER_URL,TASK_ACT_ID_6,enData,m_taskParam.szClientID);
+	PBYTE pData = HttpGet(URL);
+	delete [] pData;
+	return S_OK;
+
+}
+HRESULT CADTask::GetAD()
+{
+	CAutoLock lock(&m_Lock);
+	TCHAR URL[MAX_PATH] = {0};
+	_stprintf(URL,_T("%s/?actid=%s&cid=%s"),SERVER_URL,TASK_ACT_ID_8,m_taskParam.szClientID);
+	PBYTE pData = HttpGet(URL);
+	TCHAR szADUrl[MAX_PATH] = {0};
+	CM_Decrypt(szADUrl,(LPCWSTR)pData);
+	delete[] pData;
+	return S_OK;
+}
 HRESULT CADTask::ProcessTask()
 {
 	WaitForSingleObject(m_hEvent,INFINITE);
 	CAutoLock lock(&m_Lock);
 	BOOL bResults=FALSE;
+	switch(m_taskParam.dwTaskType)
+	{
+	case ACT_POST_AD:
+		PostAD();
+		break;
+	case ACT_GET_AD:
+		GetAD();
+		break;
+	default:
+		break;
+	}
+
 #if 0
 
 

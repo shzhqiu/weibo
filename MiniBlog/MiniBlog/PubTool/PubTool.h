@@ -8,5 +8,7 @@ BOOL CheckForUpdate();
 PBYTE HttpGet(LPTSTR lpURL);
 void StartUpdate(LPCTSTR lpUpdateEXE);
 CString GetModuleDirectory(HMODULE hModule);
+void CM_Encrypt(LPWSTR lpOut,LPCWSTR lpIn);
+void CM_Decrypt(LPWSTR lpOut,PBYTE lpIn);
 
 

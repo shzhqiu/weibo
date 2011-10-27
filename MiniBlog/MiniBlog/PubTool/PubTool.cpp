@@ -3,6 +3,8 @@
 #include  "afxtempl.h " 
 #include  "nb30.h "
 #include "md5wrapper.h"
+#include "Des.h"
+#include "base64.h"
 
 #pragma comment(lib,"netapi32.lib")
 
@@ -11,6 +13,9 @@
 
 #define HTTP_HEADER _T("http://")
 #define HTTP_HEADERLEN 7
+
+static char g_key[]={'%','r','4','H','J','9','o','0'};
+
 
 BOOL MyParseURL(LPCTSTR pstrURL,LPTSTR pServer, LPTSTR pObject, int & nPort)
 {
@@ -255,4 +260,27 @@ CString GetModuleDirectory(HMODULE hModule)
 	int iStart = strFilePath.ReverseFind('\\');
 	strFilePath = strFilePath.Mid(0,iStart + 1);
 	return strFilePath;	
+}
+
+void CM_Encrypt(LPWSTR lpOut,LPCWSTR lpIn)
+{
+	char szIn[MAX_PATH] = {0};
+	char des[MAX_PATH] = {0};
+	char base64[MAX_PATH*2] = {0};
+	WideCharToMultiByte(CP_ACP,0,lpIn,-1,szIn,MAX_PATH,NULL,NULL);
+	Des_Go(des, szIn, strlen(szIn), g_key, sizeof(g_key), DES_ENCRYPT);
+	av_base64_encode(base64,MAX_PATH*2,(const uint8_t *)des,strlen(des));
+	MultiByteToWideChar(CP_ACP,0,base64,-1,lpOut,MAX_PATH*2);
+}
+
+void CM_Decrypt(LPWSTR lpOut,PBYTE lpIn)
+{
+	//char szBase64[MAX_PATH] = {0};
+	char szBuff[MAX_PATH]   = {0};
+	char szOut[MAX_PATH]    = {0};
+	//WideCharToMultiByte(CP_ACP,0,lpIn,-1,szBase64,MAX_PATH,NULL,NULL);
+	av_base64_decode((uint8_t * )szBuff,(char*)lpIn,MAX_PATH);
+	Des_Go(szOut, szBuff, strlen(szBuff), g_key, sizeof(g_key), DES_DECRYPT);
+	MultiByteToWideChar(CP_ACP,0,szOut,-1,lpOut,MAX_PATH);
+
 }

@@ -37,8 +37,9 @@ HRESULT CSQLiteBase::InitDB()
 		return E_FAIL;
 	static TCHAR initsql[][MAX_PATH]=
 	{
-		{_T("CREATE TABLE subfans( ID INTEGER PRIMARY KEY, uid VCHAR(255), name VCHAR(255), pwd VCHAR(255),lastlogin DATETIME,status INTEGER,type INTEGER);")},
-		{_T("CREATE TABLE mainID( ID INTEGER PRIMARY KEY, uid VCHAR(255),lastlogin DATETIME,status INTEGER,type INTEGER);")}
+		{_T("CREATE TABLE tblSubfans( ID INTEGER PRIMARY KEY, uid VCHAR(255), name VCHAR(255), pwd VCHAR(255),lastlogin DATETIME,status INTEGER,type INTEGER);")},
+		{_T("CREATE TABLE tblMainID( ID INTEGER PRIMARY KEY, uid VCHAR(255),lastlogin DATETIME,status INTEGER,type INTEGER);")},
+		{_T("CREATE TABLE tblVersion( ID INTEGER PRIMARY KEY, ver VCHAR(255));")},
 
 	};
 
@@ -310,4 +311,314 @@ BOOL CSQLiteBase::CheckAdjustBindFieldIndex(int& nIndex)
 	} while(FALSE);
 
 	return bRet;
+}
+
+
+DWORD CSQLiteBase::GetFieldCount()
+{
+	DWORD dwCount = 0;
+
+	do 
+	{
+		sqlite3_stmt* pstmt = GetSQstmt();
+		if(pstmt == NULL)
+			break;
+
+		dwCount = sqlite3_column_count(pstmt);
+	} while(FALSE);
+
+	return dwCount;
+}
+
+HRESULT CSQLiteBase::Reset()
+{
+	HRESULT hr = E_FAIL;
+
+	do 
+	{
+		sqlite3_stmt* pstmt = GetSQstmt();
+		if(pstmt == NULL)
+			break;
+
+		m_bEof = TRUE;
+		int nRet = sqlite3_reset(pstmt);
+		if(nRet != SQLITE_OK)
+			break;
+
+		hr = Next();
+
+	} while(FALSE);
+
+	return hr;
+}
+
+HRESULT CSQLiteBase::GetFieldValue(LPCWSTR lpFieldName, int* pnValue)
+{
+	if(IsEof())
+		return E_FAIL;
+
+	int nIndex = GetFieldIndexByName(lpFieldName);
+	return GetFieldValue(nIndex,pnValue);
+}
+
+HRESULT CSQLiteBase::GetFieldValue(int nIndex, int* pnValue)
+{
+	HRESULT hr = E_FAIL;
+	do 
+	{
+		if(!CheckFieldIndex(nIndex) || pnValue == NULL)
+			break;
+
+		sqlite3_stmt* pstmt = GetSQstmt();
+		if(pstmt == NULL)
+			break;
+
+		*pnValue = sqlite3_column_int(pstmt,nIndex);
+
+		hr = S_OK;
+	} while(FALSE);
+
+	return hr;
+}
+
+HRESULT CSQLiteBase::GetFieldValue(LPCWSTR lpFieldName, DWORD* pdwValue)
+{
+	if(IsEof())
+		return E_FAIL;
+
+	int nIndex = GetFieldIndexByName(lpFieldName);
+	return GetFieldValue(nIndex,pdwValue);
+}
+
+HRESULT CSQLiteBase::GetFieldValue(int nIndex, DWORD* pdwValue)
+{
+	HRESULT hr = E_FAIL;
+	if(pdwValue == NULL)
+		return hr;
+
+	LONGLONG llVal = 0;
+	hr = GetFieldValue(nIndex,&llVal);
+	if(SUCCEEDED(hr))
+	{
+		*pdwValue = (DWORD)llVal;
+	}
+
+	return hr;
+}
+
+HRESULT CSQLiteBase::GetFieldValue(LPCWSTR lpFieldName, LONGLONG* pllValue)
+{
+	if(IsEof())
+		return E_FAIL;
+
+	int nIndex = GetFieldIndexByName(lpFieldName);
+	return GetFieldValue(nIndex,pllValue);
+}
+
+HRESULT CSQLiteBase::GetFieldValue(int nIndex, LONGLONG* pllValue)
+{
+	HRESULT hr = E_FAIL;
+	do 
+	{
+		if(!CheckFieldIndex(nIndex) || pllValue == NULL)
+			break;
+
+		sqlite3_stmt* pstmt = GetSQstmt();
+		if(pstmt == NULL)
+			break;
+
+		*pllValue = sqlite3_column_int64(pstmt,nIndex);
+
+		hr = S_OK;
+	} while(FALSE);
+
+	return hr;
+}
+
+HRESULT CSQLiteBase::GetFieldValue(LPCWSTR lpFieldName, double* pdbValue)
+{
+	if(IsEof())
+		return E_FAIL;
+
+	int nIndex = GetFieldIndexByName(lpFieldName);
+	return GetFieldValue(nIndex,pdbValue);
+}
+
+HRESULT CSQLiteBase::GetFieldValue(int nIndex, double* pdbValue)
+{
+	HRESULT hr = E_FAIL;
+	do 
+	{
+		if(!CheckFieldIndex(nIndex) || pdbValue == NULL)
+			break;
+
+		sqlite3_stmt* pstmt = GetSQstmt();
+		if(pstmt == NULL)
+			break;
+
+		*pdbValue = sqlite3_column_double(pstmt,nIndex);
+
+		hr = S_OK;
+	} while(FALSE);
+
+	return hr;
+}
+
+HRESULT CSQLiteBase::GetFieldValue(LPCWSTR lpFieldName, LPWSTR lpszValue, DWORD* pdwSize)
+{
+	if(IsEof())
+		return E_FAIL;
+
+	int nIndex = GetFieldIndexByName(lpFieldName);
+	return GetFieldValue(nIndex,lpszValue,pdwSize);
+}
+
+HRESULT CSQLiteBase::GetFieldValue(int nIndex, LPWSTR lpszValue, DWORD* pdwSize)
+{
+	HRESULT hr = E_FAIL;
+	do 
+	{
+		if(!CheckFieldIndex(nIndex) || lpszValue == NULL)
+			break;
+
+		sqlite3_stmt* pstmt = GetSQstmt();
+		if(pstmt == NULL)
+			break;
+
+		LPCWSTR lpszVal = (LPCWSTR)sqlite3_column_text16(pstmt,nIndex);
+		if(lpszVal == NULL)
+		{
+			hr = E_FAIL;
+			break;
+		}
+		DWORD dwSize = _tcslen(lpszVal) + 1;
+		if(lpszVal == NULL)
+		{
+			*pdwSize = dwSize;
+		}
+		else
+		{
+			if(*pdwSize >= dwSize)
+			{
+				_tcscpy(lpszValue,lpszVal);
+			}
+			else
+			{
+				hr = E_OUTOFMEMORY;
+				break;
+			}
+		}
+
+		hr = S_OK;
+	} while(FALSE);
+
+	return hr;
+}
+
+HRESULT CSQLiteBase::GetFieldValue(LPCWSTR lpFieldName, LPFILETIME pftVal)
+{
+	if(IsEof())
+		return E_FAIL;
+
+	int nIndex = GetFieldIndexByName(lpFieldName);
+	return GetFieldValue(nIndex,pftVal);
+}
+
+HRESULT CSQLiteBase::GetFieldValue(int nIndex, LPFILETIME pftVal)
+{
+	HRESULT hr = E_FAIL;
+	do 
+	{
+		if(pftVal == NULL)
+			break;
+
+		double dVal = 0.0;
+		hr = GetFieldValue(nIndex,&dVal);
+		if(FAILED(hr))
+			break;
+
+		//CRctPubTools::ConvertToFileTime(pftVal,dVal);
+		hr = S_OK;
+	} while(FALSE);
+
+	return hr;
+}
+
+HRESULT CSQLiteBase::GetFieldValue(LPCWSTR lpFieldName, void* pData,DWORD* pdwSize)
+{
+	if(IsEof())
+		return E_FAIL;
+
+	int nIndex = GetFieldIndexByName(lpFieldName);
+	return GetFieldValue(nIndex,pData,pdwSize);
+}
+
+HRESULT CSQLiteBase::GetFieldValue(int nIndex, void* pData,DWORD* pdwSize)
+{
+	HRESULT hr = E_FAIL;
+	do 
+	{
+		if(!CheckFieldIndex(nIndex) || pdwSize == NULL)
+			break;
+
+		sqlite3_stmt* pstmt = GetSQstmt();
+		if(pstmt == NULL)
+			break;
+
+		int nSize = sqlite3_column_bytes16(pstmt,nIndex);
+		if(pData == NULL)
+		{
+			*pdwSize = nSize;
+		}
+		else
+		{
+			if(*pdwSize >= nSize)
+			{
+				memcpy(pData,sqlite3_column_blob(pstmt,nIndex),nSize);
+			}
+			else
+			{
+				break;
+			}
+		}
+
+		hr = S_OK;
+	} while(FALSE);
+
+	return hr;
+}
+int CSQLiteBase::GetFieldIndexByName(LPCWSTR lpszFieldName)
+{
+	int nIndex = -1;
+
+	if(lpszFieldName == NULL || lpszFieldName[0] == 0)
+		return nIndex;
+
+	sqlite3_stmt* pstmt = GetSQstmt();
+	if(pstmt == NULL)
+		return nIndex;
+
+	DWORD dwCount = GetFieldCount();
+	for(int i=0;i<dwCount;i++)
+	{
+		LPCWSTR lpszName = (LPCWSTR)sqlite3_column_name16(pstmt,i);
+		if(lpszName == NULL)
+			continue;
+		if(_tcsicmp(lpszFieldName,lpszName) == 0)
+		{
+			nIndex = i;
+			break;
+		}
+
+	} while(FALSE);
+
+	return nIndex;
+}
+inline BOOL CSQLiteBase::CheckFieldIndex(int nIndex)
+{
+	return (nIndex >= 0 && nIndex < GetFieldCount());
+}
+BOOL CSQLiteBase::IsEof()
+{
+	return m_bEof;
 }
