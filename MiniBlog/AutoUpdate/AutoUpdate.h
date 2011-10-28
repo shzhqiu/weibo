@@ -29,7 +29,6 @@ public:
 	void StartInstall(LPCTSTR lpFileName);
 private:
 	void WaitForProcessOK(LPCTSTR lpProcName);
-	BOOL CloseMainApp();
 	void LaunchMainApp(LPCTSTR lpFileName);
 };
 

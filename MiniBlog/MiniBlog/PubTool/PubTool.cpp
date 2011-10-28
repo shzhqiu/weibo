@@ -247,7 +247,7 @@ void StartUpdate(LPCTSTR lpUpdateEXE)
 		return;
 	}
 	// Wait until child process exits.
-	WaitForSingleObject( pi.hProcess, INFINITE);
+//	WaitForSingleObject( pi.hProcess, INFINITE);
 	// Close process and thread handles. 
 	CloseHandle( pi.hProcess );
 	CloseHandle( pi.hThread );

@@ -109,48 +109,10 @@ LRESULT CAutoUpdateDlg::OnPositionMessage(WPARAM wParam,LPARAM lParam)
 }
 #define  MAIN_APP_SECRET     _T("WEIBOJUNTUAN_CENTMIND_COM")
 
-BOOL CloseMainApp()
-{
-	HANDLE   hSem   =   CreateSemaphore(NULL,   1,   1,   MAIN_APP_SECRET);   
-
-	int nCnt = 0;
-	//   信号量已存在？   
-	//   信号量存在，则程序已有一个实例运行   
-	if(GetLastError()   ==   ERROR_ALREADY_EXISTS)   
-	{   
-		//   关闭信号量句柄   
-		CloseHandle(hSem);   
-		//   寻找先前实例的主窗口   
-		HWND   hWndPrevious   =   ::GetWindow(::GetDesktopWindow(),GW_CHILD);   
-		while   (::IsWindow(hWndPrevious))   
-		{   
-			//   检查窗口是否有预设的标记?   
-			//   有，则是我们寻找的主窗   
-			if (::GetProp(hWndPrevious,   MAIN_APP_SECRET))   
-			{   
-				PostMessage(hWndPrevious,WM_CLOSE,NULL,NULL);
-				AfxMessageBox(_T("dddadafasdfas"),MB_RETRYCANCEL);
-				// find again
-				hWndPrevious   =   ::GetWindow(::GetDesktopWindow(),GW_CHILD);
-				nCnt ++;
-				if (nCnt > 10)
-				{
-					break;
-				}
-				continue;
-			}   
-			//   继续寻找下一个窗口   
-			hWndPrevious   =   ::GetWindow(hWndPrevious,GW_HWNDNEXT); 
-		}   
-
-	} 
-	else
-		CloseHandle(hSem);
-	return TRUE;
-}
+extern BOOL CloseMainApp();
 LRESULT CAutoUpdateDlg::OnEndMessage(WPARAM wParam,LPARAM lParam)
 {
-	CloseMainApp();
+//	CloseMainApp();
 	OnCancel();
 	return 0;
 }
@@ -181,6 +143,7 @@ CString GetModuleDirectory()
 DWORD CAutoUpdateDlg::DoDownLoadThread(void)
 {
 	CString csCurDir = GetModuleDirectory()+UPDATE_PACKAGE;
+	DeleteFile(csCurDir.GetBuffer());
 	if(DownloadFile(m_csDownloadURL,csCurDir))
 	{
 		m_bFileOK = TRUE;

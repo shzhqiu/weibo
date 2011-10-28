@@ -88,7 +88,7 @@ HRESULT CADTask::GetAD()
 	_stprintf(URL,_T("%s/?actid=%s&cid=%s"),SERVER_URL,TASK_ACT_ID_8,m_taskParam.szClientID);
 	PBYTE pData = HttpGet(URL);
 	TCHAR szADUrl[MAX_PATH] = {0};
-	CM_Decrypt(szADUrl,(LPCWSTR)pData);
+	CM_Decrypt(szADUrl,(PBYTE)pData);
 	delete[] pData;
 	return S_OK;
 }

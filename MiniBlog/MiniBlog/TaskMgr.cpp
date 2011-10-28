@@ -120,7 +120,7 @@ void CTaskMgr::GetTask()
 	Des_Go(szBuff2, szBuff1, strlen(szBuff1), key, sizeof(key), DES_DECRYPT);
 #endif
 	TCHAR szOutPut[MAX_PATH] = {0};
-	CM_Decrypt(szOutPut,(LPCWSTR)pBuf);
+	CM_Decrypt(szOutPut,(PBYTE)pBuf);
 	//Des_Go(szBuff2,szBuff1,)
 
 	//WriteResponseInfo(pBuf,_T("out.txt"));
