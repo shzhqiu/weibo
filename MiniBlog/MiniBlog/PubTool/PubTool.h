@@ -5,7 +5,7 @@
 int GetMAC(LPTSTR  pMac,int index = 0);
 char* GetMD5(char* pSrc);
 BOOL CheckForUpdate();
-PBYTE HttpGet(LPTSTR lpURL);
+PBYTE HttpGet(LPTSTR lpURL,BOOL bNeedRet = FALSE);
 void StartUpdate(LPCTSTR lpUpdateEXE);
 CString GetModuleDirectory(HMODULE hModule);
 void CM_Encrypt(LPWSTR lpOut,LPCWSTR lpIn);

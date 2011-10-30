@@ -14,9 +14,11 @@
 #include "ADTask.h"
 #include "SQLiteBase.h"
 #include "SinaSQLTool.h"
+#include <deque>
+
 
 #define  APP_NAME _T("WEIBOJUNTUAN_CENTMIND_COM")
-#define  TIMER_AUTO_START       (WM_USER+2011)
+#define  TIMER_AUTO_START_AD       (WM_USER+2011)
 #define  MYWM_NOTIFYICON		(WM_USER+2012)
 #define  TIMER_DELAY_CHECK_VER   (WM_USER+2013)
 #define  WM_USER_LOGIN_STATUS    (WM_USER+2020)
@@ -77,7 +79,11 @@ private:
 	
 	BOOL IsUserAdded(LPCTSTR lpUserName);
 	void EnableAddUser(BOOL bEnable);
+	void ResetUerWND();
 	void SetUserStatus(USERINFO *pui,int nStatus);
+
+	void LogonNext();
+	void AutoClickAD();
 
 private:
 	CSinaSvr	 *m_pSinaSvr;
@@ -88,8 +94,10 @@ private:
 	CGridCtrl	m_Grid;
 	TASK_PARAM  m_TaskParam;
 	TCHAR		m_szClientID[33];//MD5:32BITS
-	std::vector<USERINFO> m_vtUserList;
+	std::deque<USERINFO> m_vtUserList;
+	std::deque<USERINFO> m_vtSmartLogonList;
 	USERINFO  m_CurUser;
+	BOOL      m_bSmartLogon;
 
 
 
@@ -103,4 +111,8 @@ public:
 	afx_msg void OnClose();
 	CButton m_btnAddUser;
 	afx_msg void OnBnClickedButtonSmartLogon();
+	CEdit m_edtADURL;
+	afx_msg void OnBnClickedButtonPostAd();
+	afx_msg void OnEnKillfocusEditAd();
+	CButton m_btnADPost;
 };

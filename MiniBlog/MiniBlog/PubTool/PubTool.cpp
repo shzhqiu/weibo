@@ -163,6 +163,7 @@ BOOL CheckForUpdate()
 {
 	PBYTE pBuf = HttpGet(SERVER_UPDATE_URL);
 	float fVer = atof((char*)pBuf);
+	delete [] pBuf;
 	if (fVer > CURRENT_VERSION)
 	{
 		return TRUE;
@@ -170,9 +171,9 @@ BOOL CheckForUpdate()
 	else
 		return FALSE;
 }
-PBYTE HttpGet(LPTSTR lpURL)
+PBYTE HttpGet(LPTSTR lpURL,BOOL bNeedRet)
 {
-	PBYTE pBuf = new BYTE[1024*1024];
+	PBYTE pBuf = NULL;
 	BOOL bResults = FALSE;
 	HINTERNET  hSession = NULL,hConnect = NULL,	hRequest = NULL;
 	TCHAR szServer[1024] = _T("www.centmind.com");
@@ -204,8 +205,12 @@ PBYTE HttpGet(LPTSTR lpURL)
 	if (hRequest) 
 		bResults = WinHttpSendRequest( hRequest, szHeader,-1, szPost, nLen,nLen,0);
 
-	DWORD dwLen;
-	GetHttpResponse(pBuf,dwLen,hRequest);
+	if (bNeedRet)
+	{
+		pBuf = new BYTE[1024*1024];
+		DWORD dwLen;
+		GetHttpResponse(pBuf,dwLen,hRequest);
+	}
 
 	//WriteResponseInfo(pBuf,_T("out.txt"));
 	if (hRequest) WinHttpCloseHandle(hRequest);

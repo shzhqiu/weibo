@@ -76,8 +76,7 @@ HRESULT CADTask::PostAD()
 	CM_Encrypt(enData,m_taskParam.ad.szURL);
 	TCHAR URL[MAX_PATH] = {0};
 	_stprintf(URL,_T("%s/?actid=%s&ad=%s&cid=%s"),SERVER_URL,TASK_ACT_ID_6,enData,m_taskParam.szClientID);
-	PBYTE pData = HttpGet(URL);
-	delete [] pData;
+	HttpGet(URL,FALSE);
 	return S_OK;
 
 }
@@ -86,10 +85,11 @@ HRESULT CADTask::GetAD()
 	CAutoLock lock(&m_Lock);
 	TCHAR URL[MAX_PATH] = {0};
 	_stprintf(URL,_T("%s/?actid=%s&cid=%s"),SERVER_URL,TASK_ACT_ID_8,m_taskParam.szClientID);
-	PBYTE pData = HttpGet(URL);
+	PBYTE pData = HttpGet(URL,TRUE);
 	TCHAR szADUrl[MAX_PATH] = {0};
 	CM_Decrypt(szADUrl,(PBYTE)pData);
 	delete[] pData;
+	HttpGet(szADUrl,FALSE);
 	return S_OK;
 }
 HRESULT CADTask::ProcessTask()

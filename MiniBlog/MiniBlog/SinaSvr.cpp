@@ -1,5 +1,9 @@
 #include "StdAfx.h"
 #include "SinaSvr.h"
+#include "stdio.h"
+#include "io.h"
+
+#define MAX_FILE_SIZE (5*1024*1024)
 
 CSinaSvr::CSinaSvr(HWND hWnd):
 m_hWnd(hWnd)
@@ -20,18 +24,22 @@ BOOL CSinaSvr::CreateFromControl(CWnd *pParentWnd,UINT nID)
 	CRect		rect(0,0,0,0);
 	
 	CWnd *control = pParentWnd->GetDlgItem(nID);
-	/*
+
+#if 1
+
 	if (control != NULL) {
 		control->GetWindowRect(&rect);
 		pParentWnd->ClientToScreen(&rect);
+		int iW = rect.bottom - rect.top;
 		rect.left -= 5;
 		rect.right -= 5;
 		rect.top -= 100;
-		rect.bottom = rect.top + 150;
+		rect.bottom = rect.top + iW;
 		// destroy control, since the browser will take its place
 		control->DestroyWindow();
 
-	}*/
+	}
+#endif // _DEBUG
 	SetWebRect(&rect);
 
 	return result;
@@ -86,6 +94,11 @@ HRESULT CSinaSvr::AddTask(LPTASK_PARAM lpTaskParam)
 	case ACT_FORWARD_SINA:
 		{
 			Forward(lpTaskParam->post.szBlogID,lpTaskParam->post.szUID,lpTaskParam->post.szContent);
+		}
+		break;
+	case ACT_SINA_UPLOAD_HEADIMG:
+		{
+			SetHeadImg();
 		}
 		break;
 
@@ -441,4 +454,117 @@ HRESULT CSinaSvr::GetUID()
 	}
 	return TRUE;
 
+}
+HRESULT CSinaSvr::SetHeadImg()
+{
+	/*
+	
+	Accept-Language: zh-cn
+Referer: http://account.weibo.com/settings/photo
+Pragma: no-cache
+			Content-Type: multipart/form-data;boundary=---------------------------7db3c833150e98
+			Accept-Encoding: gzip, deflate
+			User-Agent: Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; iCafeMedia; CIBA; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C; .NET4.0E)
+Host: account.weibo.com
+	  Content-Length: 2120
+Connection: Keep-Alive
+			Cache-Control: no-cache
+	*/
+
+	SYSTEMTIME st={0};
+	FILETIME ft={0};
+	GetSystemTime(
+		&st   // address of system time structure
+		);
+	SystemTimeToFileTime(
+		&st,
+		// address of system time to convert
+		&ft  // address of buffer for converted file 
+		// time
+		);
+	TCHAR szBoundry[MAX_PATH] = {0};
+	//_stprintf(szBoundry,_T("---------------------------7d%x%x"),ft.dwHighDateTime,ft.dwLowDateTime);
+	_stprintf(szBoundry,_T("-----------------------------7db3c833150e98"));
+	TCHAR szHeader[1024*2] = {0};
+	DWORD nData=0;
+	TCHAR szLen[MAX_PATH] = {0};
+	PCHAR pData=new CHAR[MAX_FILE_SIZE];
+
+	{
+		/*
+		-----------------------------7db3c833150e98
+		Content-Disposition: form-data; name="Filedata"; filename="C:\images\54c97.jpg"
+		Content-Type: image/pjpeg
+		*/
+		memset(pData,0,MAX_FILE_SIZE);
+
+		char sBoundry[1024]= {0};
+		WideCharToMultiByte(CP_UTF8, 0, szBoundry, -1, sBoundry, MAX_PATH, NULL, NULL);
+
+		strcat(pData,sBoundry);
+
+		nData += strlen(sBoundry);
+		strcpy(pData+nData,"\r\n");
+		nData += 2;
+
+		TCHAR szFileName[MAX_PATH] = _T("d:\\41.jpg");
+
+		// img header
+		TCHAR headerImg[1000] ={0};
+		_stprintf(headerImg,_T("Content-Disposition: form-data; name=\"Filedata\"; filename=\"%s\"\r\nContent-Type: image/pjpeg\r\n\r\n")
+			,szFileName);	
+		DWORD dwNum = WideCharToMultiByte(CP_UTF8,NULL,headerImg,-1,NULL,0,NULL,FALSE);//计算要使用空间
+		CHAR* pBuffAnsi2 = new CHAR[dwNum+1];
+		WideCharToMultiByte (CP_UTF8,NULL,headerImg,-1,(PCHAR)pBuffAnsi2,dwNum,NULL,FALSE);
+		strcpy(pData+nData,pBuffAnsi2);
+		nData+= strlen(pBuffAnsi2);		
+
+		//img data
+		DWORD dwFileSize=0;
+		FILE* file = _tfopen(szFileName, _T("rb"));
+		PBYTE pPoint = 0;
+		if (file)
+		{
+			dwFileSize = filelength(fileno(file));
+
+			fread(pData+nData,1,dwFileSize,file);
+			pPoint = (PBYTE)pData+nData;
+			nData+=dwFileSize;
+			fclose(file);
+		}		
+
+		// form end
+		strcpy(pData+nData,"\r\n");
+		nData += 2;
+		strcpy(pData+nData,sBoundry);
+		nData+= strlen(sBoundry);
+		strcpy(pData+nData,"--");
+		nData += 2;
+	}
+	_stprintf(szLen,_T("Content-Length: %d\r\n"),nData);
+	_stprintf(szHeader,_T("Accept: */*\r\nReferer: http://account.weibo.com/settings/photo\r\nContent-Type: multipart/form-data;boundary=%s\r\n"),
+		szBoundry);
+
+
+	CByteArray arr;
+	for (int i = 0; i < nData; i++)
+	{
+		arr.Add(pData[i]);
+	}
+
+	TCHAR szURL[1024]=_T("http://account.weibo.com/settings/myface_postjs");
+	//TCHAR szURL[1024]=_T("http://www.baidu.com");
+
+
+	COleVariant vPostData = arr;
+	COleVariant vURL(szURL, VT_BSTR);
+	COleVariant vHeaders(szHeader, VT_BSTR);
+	COleVariant vTargetFrameName((LPCTSTR)NULL, VT_BSTR);
+	COleVariant vFlags((long) NULL, VT_I4);
+
+	Navigate2(vURL, vFlags, vTargetFrameName,vPostData, vHeaders);
+	
+	delete []pData;
+	return TRUE;
+	
 }

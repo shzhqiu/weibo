@@ -1,4 +1,3 @@
-CallMemberFunc
 
 // MiniBlogDlg.cpp : implementation file
 //
@@ -9,7 +8,7 @@ CallMemberFunc
 #include "afxdialogex.h"
 #include "SinaSvr.h"
 #include "PubTool/PubTool.h"
-
+#include "afxinet.h"
 
 using namespace std;
 
@@ -62,6 +61,7 @@ CMiniBlogDlg::CMiniBlogDlg(CWnd* pParent /*=NULL*/)
 	m_pDB = new CSQLiteBase();
 	m_pTaskMgr = new CTaskMgr();
 	m_pSinaSQL = new CSinaSQLTool(m_pDB);
+	m_bSmartLogon = FALSE;
 }
 CMiniBlogDlg::~CMiniBlogDlg()
 {
@@ -74,8 +74,8 @@ CMiniBlogDlg::~CMiniBlogDlg()
 };
 BOOL CMiniBlogDlg::IsUserAdded(LPCTSTR lpUserName)
 {
-	std::vector<USERINFO>::iterator end = m_vtUserList.end();
-	std::vector<USERINFO>::iterator beg = m_vtUserList.begin();
+	std::deque<USERINFO>::iterator end = m_vtUserList.end();
+	std::deque<USERINFO>::iterator beg = m_vtUserList.begin();
 	for (  ; beg != end ; beg++ ) 
 	{ 
 		if (_tcsicmp(lpUserName,beg->szName) == 0)
@@ -93,6 +93,8 @@ void CMiniBlogDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_EDIT_USERPWD, m_edtUserPwd);
 	DDX_Control(pDX, IDC_GRID_CTRL, m_Grid);
 	DDX_Control(pDX, IDC_BUTTON_ADD_USER, m_btnAddUser);
+	DDX_Control(pDX, IDC_EDIT_AD, m_edtADURL);
+	DDX_Control(pDX, IDC_BUTTON_POST_AD, m_btnADPost);
 }
 
 BEGIN_MESSAGE_MAP(CMiniBlogDlg, CDialogEx)
@@ -110,6 +112,8 @@ BEGIN_MESSAGE_MAP(CMiniBlogDlg, CDialogEx)
 	ON_MESSAGE(WM_USER_LOGIN_STATUS, OnLoginStatus)
 
 	ON_BN_CLICKED(IDC_BUTTON_SMART_LOGON, &CMiniBlogDlg::OnBnClickedButtonSmartLogon)
+	ON_BN_CLICKED(IDC_BUTTON_POST_AD, &CMiniBlogDlg::OnBnClickedButtonPostAd)
+	ON_EN_KILLFOCUS(IDC_EDIT_AD, &CMiniBlogDlg::OnEnKillfocusEditAd)
 END_MESSAGE_MAP()
 
 BOOL CMiniBlogDlg::Init()
@@ -134,6 +138,7 @@ void CMiniBlogDlg::LoadDB()
 		 AddFansToGrid(ui.szName,_T("准备登陆"));
 
 		 m_vtUserList.push_back(ui);
+		 m_vtSmartLogonList.push_back(ui);
 	 } while (TRUE);
 	 
 
@@ -245,12 +250,20 @@ BOOL CMiniBlogDlg::InitUI()
 	m_pTaskMgr->SetSvr(m_pSinaSvr);
 	m_pSinaSvr->CreateFromControl(this,IDC_STATIC_BROWSER);
 	InitGrid();
+	//m_btnADPost.EnableWindow(FALSE);
 	//m_pSinaSvr->CreateFromControl(this,IDC_STATIC_BROWSER);
 #ifdef _DEBUG
 	//CString strName = _T("fortestonlya@sina.com");
 	//CString strPwd = _T("fortestonlya");
-	m_edtUsername.SetWindowText(_T("shzhqiu@hotmail.com"));
-	m_edtUserPwd.SetWindowText(_T("93732717"));
+	/*
+	xb209x20@sina.com   891466324
+
+	ll660l66@sina.com,2041236616
+	*/
+	//m_edtUsername.SetWindowText(_T("xb209x20@sina.com"));
+	//m_edtUserPwd.SetWindowText(_T("891466324"));
+	m_edtUsername.SetWindowText(_T("ll660l66@sina.com"));
+	m_edtUserPwd.SetWindowText(_T("2041236616"));
 
 
 #endif // _DEBUG
@@ -344,15 +357,29 @@ HCURSOR CMiniBlogDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+void CMiniBlogDlg::AutoClickAD()
+{
+	if(!m_pADsvr)
+		return;
+	TASK_PARAM tp = {0};
+	tp.dwTaskType = ACT_GET_AD;
 
+	SetClintIDForTask(&tp);
+	m_pADsvr->AddTask(&tp);
+
+}
 
 void CMiniBlogDlg::OnBnClickedButton1Test()
 {
 	//SetTimer(TIMER_AUTO_START,1000*60,NULL);
 	TASK_PARAM tp = {0};
 	tp.dwTaskType = ACT_GET_AD;
-	SetClintIDForTask(&tp);
-	m_pADsvr->AddTask(&tp);
+	
+	//SetClintIDForTask(&tp);
+	//m_pADsvr->AddTask(&tp);
+
+	tp.dwTaskType = ACT_SINA_UPLOAD_HEADIMG;
+	m_pSinaSvr->AddTask(&tp);
 
 #if 0
 
@@ -395,7 +422,7 @@ void CMiniBlogDlg::OnBnClickedButtonAddUser()
 		AfxMessageBox(szTip,MB_ICONINFORMATION);
 		return;
 	}
-	AddFansToGrid(strName,strPwd);
+	AddFansToGrid(strName,NULL);
 	EnableAddUser(FALSE);
 
 	TASK_PARAM tp = {0};
@@ -406,6 +433,12 @@ void CMiniBlogDlg::OnBnClickedButtonAddUser()
 	m_pSinaSvr->AddTask(&tp);
 
 	// TODO: Add your control notification handler code here
+}
+void CMiniBlogDlg::ResetUerWND()
+{
+	m_edtUsername.SetWindowText(_T(""));
+	m_edtUserPwd.SetWindowText(_T(""));
+
 }
 void CMiniBlogDlg::EnableAddUser(BOOL bEnable)
 {
@@ -474,8 +507,8 @@ void CMiniBlogDlg::OnTimer(UINT_PTR nIDEvent)
 	// TODO: Add your message handler code here and/or call default
 	switch(nIDEvent)
 	{
-	case TIMER_AUTO_START:
-		m_pTaskMgr->GetTask();
+	case TIMER_AUTO_START_AD:
+		AutoClickAD();
 		break;
 	case TIMER_DELAY_CHECK_VER:
 		{
@@ -506,7 +539,7 @@ void CMiniBlogDlg::OnTimer(UINT_PTR nIDEvent)
 void CMiniBlogDlg::OnDestroy()
 {
 	CDialogEx::OnDestroy();
-	KillTimer(TIMER_AUTO_START);
+	KillTimer(TIMER_AUTO_START_AD);
 	::RemoveProp(m_hWnd,  APP_NAME);
 	TrayMessage( NIM_DELETE );	
 
@@ -609,6 +642,8 @@ int CMiniBlogDlg::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	TrayMessage(NIM_ADD);
 	::SetProp(m_hWnd,   APP_NAME,   (HANDLE)1);  
 	SetTimer(TIMER_DELAY_CHECK_VER,1000,NULL);
+	SetTimer(TIMER_AUTO_START_AD,1000,NULL);
+	
 
 	return 0;
 }
@@ -647,9 +682,14 @@ void CMiniBlogDlg::SetUserStatus(USERINFO *pui,int nStatus)
 					m_Grid.SetItemText(i,2,_T("未开通微博"));
 				}
 				break;
+			case SINA_LOGIN_LOGGING:
+				{
+					m_Grid.SetItemText(i,2,_T("登录中..."));
+				}
+				break;
 			default:
 				{
-					m_Grid.SetItemText(i,2,_T("登录失败，错误类型还不知道"));
+					m_Grid.SetItemText(i,2,_T("登录失败，未知错误类型"));
 				}
 				break;
 			}
@@ -684,14 +724,17 @@ LRESULT CMiniBlogDlg::OnLoginStatus(WPARAM wParam, LPARAM lParam)
 		}
 		break;
 	default:
+			EnableAddUser(TRUE);
 		break;
 
 	}
-	EnableAddUser(TRUE);
-	if (nCode == SINA_LOGIN_SUCCESS)
+	ResetUerWND();
+	if (nCode == SINA_LOGIN_SUCCESS && !m_bSmartLogon)
 	{
 		AddUserToDB(&ui);
 	}
+	if (m_bSmartLogon)
+		LogonNext();
 	return 0;
 }
 void CMiniBlogDlg::SetClintIDForTask(LPTASK_PARAM lptp)
@@ -703,13 +746,69 @@ void CMiniBlogDlg::SetClintIDForTask(LPTASK_PARAM lptp)
 }
 void CMiniBlogDlg::OnBnClickedButtonSmartLogon()
 {
-	TASK_PARAM tp = {0};
-	tp.dwTaskType = ACT_POST_AD;
-	SetClintIDForTask(&tp);
-	_tcscpy(tp.ad.szURL,_T("http://taourl.com/p9i94"));
-
-	//m_pSinaSvr->AddTask(&tp);
-	m_pADsvr->AddTask(&tp);
+	m_bSmartLogon = TRUE;
+	LogonNext();
 
 	// TODO: Add your control notification handler code here
+}
+
+
+void CMiniBlogDlg::OnBnClickedButtonPostAd()
+{
+	// TODO: Add your control notification handler code here
+	CString strURL ;
+	m_edtADURL.GetWindowText(strURL);
+	DWORD dwType = 0;
+	CString strSevr,strObj;
+	WORD wPort = 0;
+	BOOL bRet = AfxParseURL(strURL.GetBuffer(),dwType,strSevr,strObj,wPort);
+	if (bRet && dwType == AFX_INET_SERVICE_HTTP)
+	{
+		TASK_PARAM tp = {0};
+		tp.dwTaskType = ACT_POST_AD;
+		SetClintIDForTask(&tp);
+		_tcscpy(tp.ad.szURL,strURL.GetBuffer());
+		m_pADsvr->AddTask(&tp);
+
+#ifndef _DEBUG
+		m_btnADPost.EnableWindow(FALSE);
+		m_edtADURL.EnableWindow(FALSE);
+#endif // _DEBUG
+	}
+	else
+	{
+		AfxMessageBox(_T("请输入正确的广告地址！"));
+	}
+
+
+
+}
+
+void CMiniBlogDlg::OnEnKillfocusEditAd()
+{
+
+	// TODO: Add your control notification handler code here
+}
+void CMiniBlogDlg::LogonNext()
+{
+	if (!m_bSmartLogon)
+		return;
+	TASK_PARAM tp = {0};
+	tp.dwTaskType = ACT_LOGIN_SINA;
+	std::deque<USERINFO>::iterator beg = m_vtSmartLogonList.begin();
+	std::deque<USERINFO>::iterator end = m_vtSmartLogonList.end();
+
+	if (beg != end)
+	{
+		_tcscpy(tp.user.szUserName,beg->szName);
+		_tcscpy(tp.user.szUserPwd,beg->szPWD);
+
+		m_pSinaSvr->AddTask(&tp);
+		USERINFO ui = m_vtSmartLogonList.at(0);
+		SetUserStatus(&ui,SINA_LOGIN_LOGGING);
+		m_vtSmartLogonList.pop_front();
+	}
+	else
+		m_bSmartLogon = FALSE;
+	
 }

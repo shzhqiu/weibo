@@ -7,6 +7,7 @@ enum ERROR_CODE
 	SINA_PWD_ERROR,
 	SINA_LOGINING,
 	SINA_NO_WEIBO,
+	SINA_LOGIN_LOGGING,
 
 	SINA_NONE
 
@@ -41,7 +42,6 @@ private:
 
 	void Login(LPCTSTR lpUserName,LPCTSTR lpPwd);
 	void PostWeibo(LPCTSTR lpContent);
-	void PostWeibo1(LPCTSTR lpContent);
 	void Follow(LPCTSTR  lpUID);
 	void Forward(LPCTSTR  lpMid,LPCTSTR lpUID,LPCTSTR lpReason);
 	void Comment(LPCTSTR lpMid,LPCTSTR lpUID,LPCTSTR lpContent);
@@ -49,6 +49,7 @@ private:
 
 	HRESULT CheckLoginStatus(CString URL);
 	HRESULT GetUID();
+	HRESULT SetHeadImg();
 
 private:
 	HWND m_hWnd;
