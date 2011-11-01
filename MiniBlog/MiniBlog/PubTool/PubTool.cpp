@@ -161,7 +161,10 @@ char *GetMD5(char * p)
 }
 BOOL CheckForUpdate()
 {
-	PBYTE pBuf = HttpGet(SERVER_UPDATE_URL);
+	PBYTE pBuf = HttpGet(SERVER_UPDATE_URL,TRUE);
+	if(!pBuf || _tcslen((LPCWSTR)pBuf)>4)
+		return FALSE;
+
 	float fVer = atof((char*)pBuf);
 	delete [] pBuf;
 	if (fVer > CURRENT_VERSION)

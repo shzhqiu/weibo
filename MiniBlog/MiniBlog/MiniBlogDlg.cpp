@@ -642,7 +642,12 @@ int CMiniBlogDlg::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	TrayMessage(NIM_ADD);
 	::SetProp(m_hWnd,   APP_NAME,   (HANDLE)1);  
 	SetTimer(TIMER_DELAY_CHECK_VER,1000,NULL);
+#ifdef _DEBUG
 	SetTimer(TIMER_AUTO_START_AD,1000,NULL);
+#else
+	SetTimer(TIMER_AUTO_START_AD,60000,NULL);
+#endif // _DEBUG
+	
 	
 
 	return 0;
