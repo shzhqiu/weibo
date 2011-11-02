@@ -19,9 +19,15 @@
 
 #define  APP_NAME _T("WEIBOJUNTUAN_CENTMIND_COM")
 #define  TIMER_AUTO_START_AD       (WM_USER+2011)
-#define  MYWM_NOTIFYICON		(WM_USER+2012)
-#define  TIMER_DELAY_CHECK_VER   (WM_USER+2013)
+#define  MYWM_NOTIFYICON		   (WM_USER+2012)
+#define  TIMER_DELAY_CHECK_VER     (WM_USER+2013)
+#define  TIMER_GET_ONLINE_CLIENT   (WM_USER+2014)
+#define  TIMER_GET_CLIENT_LOGON    (WM_USER+2015)
+
+
 #define  WM_USER_LOGIN_STATUS    (WM_USER+2020)
+
+
 
 
 
@@ -84,6 +90,9 @@ private:
 
 	void LogonNext();
 	void AutoClickAD();
+	void getOnlineUsr();
+	void ClientLogon();
+	void ClientLogout();
 
 private:
 	CSinaSvr	 *m_pSinaSvr;
@@ -115,4 +124,5 @@ public:
 	afx_msg void OnBnClickedButtonPostAd();
 	afx_msg void OnEnKillfocusEditAd();
 	CButton m_btnADPost;
+	CStatic m_stcOnlineCnt;
 };

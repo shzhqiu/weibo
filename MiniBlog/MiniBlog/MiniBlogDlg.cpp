@@ -95,6 +95,7 @@ void CMiniBlogDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_BUTTON_ADD_USER, m_btnAddUser);
 	DDX_Control(pDX, IDC_EDIT_AD, m_edtADURL);
 	DDX_Control(pDX, IDC_BUTTON_POST_AD, m_btnADPost);
+	DDX_Control(pDX, IDC_STATIC_ONLINE_CNT, m_stcOnlineCnt);
 }
 
 BEGIN_MESSAGE_MAP(CMiniBlogDlg, CDialogEx)
@@ -527,6 +528,15 @@ void CMiniBlogDlg::OnTimer(UINT_PTR nIDEvent)
 			}
 		}
 		break;
+	case TIMER_GET_ONLINE_CLIENT:
+		getOnlineUsr();
+		break;
+	case TIMER_GET_CLIENT_LOGON:
+		{
+			KillTimer(TIMER_GET_CLIENT_LOGON);
+			ClientLogon();
+		}
+		break;
 	default:
 		break;
 
@@ -539,6 +549,7 @@ void CMiniBlogDlg::OnTimer(UINT_PTR nIDEvent)
 void CMiniBlogDlg::OnDestroy()
 {
 	CDialogEx::OnDestroy();
+	ClientLogout();
 	KillTimer(TIMER_AUTO_START_AD);
 	::RemoveProp(m_hWnd,  APP_NAME);
 	TrayMessage( NIM_DELETE );	
@@ -632,7 +643,52 @@ LRESULT CMiniBlogDlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 
 	return CDialogEx::WindowProc(message, wParam, lParam);
 }
+void CMiniBlogDlg::ClientLogon()
+{
+	TCHAR szURL[MAX_PATH] = {0};
+	_stprintf(szURL,_T("%s/?actid=%s&cid=%s&f=1"),SERVER_URL,TASK_ACT_ID_9,m_szClientID);
+	PBYTE pBuf = HttpGet(szURL,TRUE);
+	if (pBuf)
+	{
+		if (_tcslen(LPCWSTR(pBuf))<10)
+		{
+			TCHAR szCnt[MAX_PATH] = {0};
+			_stprintf(szCnt,_T("在线用户：%s"),(LPCWSTR)pBuf);
+			m_stcOnlineCnt.SetWindowText(szCnt);
+		}
+		else
+			m_stcOnlineCnt.SetWindowText(_T("在线用户：未知"));
 
+		delete [] pBuf;
+	}
+
+}
+void CMiniBlogDlg::ClientLogout()
+{
+	TCHAR szURL[MAX_PATH] = {0};
+	_stprintf(szURL,_T("%s/?actid=%s&cid=%s&f=0"),SERVER_URL,TASK_ACT_ID_9,m_szClientID);
+	HttpGet(szURL,FALSE);
+}
+void CMiniBlogDlg::getOnlineUsr()
+{
+	TCHAR szURL[MAX_PATH] = {0};
+	_stprintf(szURL,_T("%s/?actid=%s&cid=%s"),SERVER_URL,TASK_ACT_ID_10,m_szClientID);
+
+	 PBYTE pBuf = HttpGet(szURL,TRUE);
+	 if (pBuf)
+	 {
+		 if (_tcslen(LPCWSTR(pBuf))<10)
+		 {
+			 TCHAR szCnt[MAX_PATH] = {0};
+			 _stprintf(szCnt,_T("在线用户：%s"),(LPCWSTR)pBuf);
+			 m_stcOnlineCnt.SetWindowText(szCnt);
+		 }
+		 else
+			 m_stcOnlineCnt.SetWindowText(_T("在线用户：未知"));
+
+		 delete [] pBuf;
+	 }
+}
 int CMiniBlogDlg::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
 	if (CDialogEx::OnCreate(lpCreateStruct) == -1)
@@ -642,6 +698,8 @@ int CMiniBlogDlg::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	TrayMessage(NIM_ADD);
 	::SetProp(m_hWnd,   APP_NAME,   (HANDLE)1);  
 	SetTimer(TIMER_DELAY_CHECK_VER,1000,NULL);
+	SetTimer(TIMER_GET_ONLINE_CLIENT,5*60*1000,NULL);
+	SetTimer(TIMER_GET_CLIENT_LOGON,50,NULL);
 #ifdef _DEBUG
 	SetTimer(TIMER_AUTO_START_AD,1000,NULL);
 #else

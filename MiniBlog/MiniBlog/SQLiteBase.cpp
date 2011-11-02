@@ -51,6 +51,7 @@ HRESULT CSQLiteBase::InitDB()
 		ExecuteSQL(initsql[i]);
 	}
 	CommitTrans();
+	return S_OK;
 
 }
 HRESULT CSQLiteBase::ExecuteSQL(LPCWSTR lpszSQL)

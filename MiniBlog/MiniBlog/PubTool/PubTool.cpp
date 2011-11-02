@@ -174,6 +174,7 @@ BOOL CheckForUpdate()
 	else
 		return FALSE;
 }
+
 PBYTE HttpGet(LPTSTR lpURL,BOOL bNeedRet)
 {
 	PBYTE pBuf = NULL;
