@@ -271,24 +271,75 @@ CString GetModuleDirectory(HMODULE hModule)
 	return strFilePath;	
 }
 
+void	hex2bin(char * bin,	const char *val)
+{
+	int tmp=*((const int*)val);
+	//cout << "tmp = " << tmp << "\n";
+	int bit_number = strlen(val);
+	char buf[3];
+	for (int i = 0; i < bit_number/2 ;i++)
+	{
+		buf[0] = val[i*2];
+		buf[1] = val[2*i+1];
+		buf[2] = '\0';
+
+		bin[i] = strtoul(buf,NULL,16);
+	}
+}
+
+static LPSTR StringToHex(LPSTR lpHex,PBYTE lpSrc,int len)
+{
+
+    unsigned char* pDes = (unsigned char*)lpHex;
+	unsigned char* pSrc = (unsigned char*)lpSrc;
+    char  buf[2];
+
+    long dwSize = len;
+    for (long dwIndex = 0; dwIndex < dwSize; ++dwIndex)
+    {
+        unsigned char c0 = *pSrc >> 4;  
+        if ( c0 >= 0x0 && c0 <= 0x9)
+        {
+            buf[0] = c0 - 0 + '0';
+        }
+        else 
+        {
+            buf[0] = c0 - 10 + 'A';
+        }
+        unsigned char c1 = *pSrc++ & 0x0F;
+        if ( c1 >= 0x0 && c1 <= 0x9)
+        {
+            buf[1] = c1 - 0 + '0';
+        }
+        else 
+        {
+            buf[1] = c1 - 10 + 'A';
+        }
+        *(pDes++) = buf[0];
+        *(pDes++) = buf[1];
+    }
+    return lpHex;
+}
+
 void CM_Encrypt(LPWSTR lpOut,LPCWSTR lpIn)
 {
 	char szIn[MAX_PATH] = {0};
-	char des[MAX_PATH] = {0};
-	char base64[MAX_PATH*2] = {0};
+	char des[MAX_PATH*2] = {0};
+	char hex[MAX_PATH*4] = {0};
 	WideCharToMultiByte(CP_ACP,0,lpIn,-1,szIn,MAX_PATH,NULL,NULL);
 	Des_Go(des, szIn, strlen(szIn), g_key, sizeof(g_key), DES_ENCRYPT);
-	av_base64_encode(base64,MAX_PATH*2,(const uint8_t *)des,strlen(des));
-	MultiByteToWideChar(CP_ACP,0,base64,-1,lpOut,MAX_PATH*2);
+	int len = ((strlen(szIn)+7)/8)*8;
+	StringToHex(hex,(PBYTE)des,len);
+	MultiByteToWideChar(CP_ACP,0,hex,-1,lpOut,MAX_PATH*2);
 }
 
 void CM_Decrypt(LPWSTR lpOut,PBYTE lpIn)
 {
 	//char szBase64[MAX_PATH] = {0};
-	char szBuff[MAX_PATH]   = {0};
+	char szBuff[MAX_PATH*2]   = {0};
 	char szOut[MAX_PATH]    = {0};
 	//WideCharToMultiByte(CP_ACP,0,lpIn,-1,szBase64,MAX_PATH,NULL,NULL);
-	av_base64_decode((uint8_t * )szBuff,(char*)lpIn,MAX_PATH);
+	hex2bin(szBuff,(char*)lpIn);
 	Des_Go(szOut, szBuff, strlen(szBuff), g_key, sizeof(g_key), DES_DECRYPT);
 	MultiByteToWideChar(CP_ACP,0,szOut,-1,lpOut,MAX_PATH);
 

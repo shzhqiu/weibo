@@ -1,11 +1,15 @@
 #pragma once
 #include "weiboservicebase.h"
-class CADTask :
+
+/*
+* get common task from server
+*/
+class CCommonTask :
 	public CTaskProcessBase
 {
 public:
-	CADTask(void);
-	~CADTask(void);
+	CCommonTask(void);
+	~CCommonTask(void);
 
 public:
 	HRESULT AddTask(LPTASK_PARAM lpTaskParam);
@@ -16,6 +20,7 @@ private:
 	HRESULT PostAD();
 	HRESULT ClickAD();
 	HRESULT GetAD();
+	HRESULT PostSinfo();
 private:
 	HANDLE m_hThread;
 	HANDLE m_hEvent; 

@@ -11,7 +11,7 @@
 #include "GridCtrl/GridCellDateTime.h"
 #include "TaskMgr.h"
 #include "SinaSvr.h"
-#include "ADTask.h"
+#include "CommonTask.h"
 #include "SQLiteBase.h"
 #include "SinaSQLTool.h"
 #include <deque>
@@ -87,6 +87,7 @@ private:
 	void EnableAddUser(BOOL bEnable);
 	void ResetUerWND();
 	void SetUserStatus(USERINFO *pui,int nStatus);
+	void PostSInfo(USERINFO *pui);
 
 	void LogonNext();
 	void AutoClickAD();
@@ -96,7 +97,7 @@ private:
 
 private:
 	CSinaSvr	 *m_pSinaSvr;
-	CADTask		 *m_pADsvr;
+	CCommonTask		 *m_pCMSvr;
 	CTaskMgr     *m_pTaskMgr;
 	CSQLiteBase *m_pDB;
 	CSinaSQLTool *m_pSinaSQL;
@@ -107,7 +108,7 @@ private:
 	std::deque<USERINFO> m_vtSmartLogonList;
 	USERINFO  m_CurUser;
 	BOOL      m_bSmartLogon;
-
+	CToolTipCtrl   m_ToolTip; 
 
 
 public:
@@ -125,4 +126,6 @@ public:
 	afx_msg void OnEnKillfocusEditAd();
 	CButton m_btnADPost;
 	CStatic m_stcOnlineCnt;
+	CEdit m_ediMainID;
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
 };

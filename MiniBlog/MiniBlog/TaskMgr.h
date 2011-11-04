@@ -8,12 +8,14 @@ typedef struct tag_TASK_PARAM
 	union
 	{
 		struct{
-			TCHAR szUID[MAX_PATH];
-			TCHAR szBlogID[MAX_PATH];
-			TCHAR szContent[MAX_PATH];
+			TCHAR szUID[20];
+			TCHAR szToUID[15];
+			TCHAR szBlogID[33];
+			TCHAR szContent[MAX_PATH*5];
 		}post;
 		struct
 		{
+			TCHAR szUID[20];
 			TCHAR szUserName[50];
 			TCHAR szUserPwd[50];
 		}user;
@@ -37,7 +39,16 @@ typedef enum tag_TASK_ACTION
 	ACT_CLICK_AD,
 	ACT_POST_AD,
 	ACT_GET_AD,
-		
+	ACT_POST_S_INFO,
+	ACT_POST_B_INFO,
+	ACT_POST_C_STATUS,
+
+	ACT_GET_SINA_FOLLOW,
+	ACT_GET_SINA_POST,
+	ACT_GET_SINA_COMMENT,
+	ACT_GET_SINA_REPLY,
+	ACT_GET_SINA_REPOST,
+
 	ACT_NULL
 }TASK_ACTION;
 

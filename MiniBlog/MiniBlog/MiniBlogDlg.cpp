@@ -96,6 +96,7 @@ void CMiniBlogDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_EDIT_AD, m_edtADURL);
 	DDX_Control(pDX, IDC_BUTTON_POST_AD, m_btnADPost);
 	DDX_Control(pDX, IDC_STATIC_ONLINE_CNT, m_stcOnlineCnt);
+	DDX_Control(pDX, IDC_EDIT_MAIN_ID, m_ediMainID);
 }
 
 BEGIN_MESSAGE_MAP(CMiniBlogDlg, CDialogEx)
@@ -247,10 +248,13 @@ BOOL CMiniBlogDlg::InitUI()
 	if (!m_pSinaSvr)
 		return FALSE;
 	m_pSinaSvr = new CSinaSvr(GetSafeHwnd());
-	m_pADsvr   = new CADTask();
+	m_pCMSvr   = new CCommonTask();
 	m_pTaskMgr->SetSvr(m_pSinaSvr);
 	m_pSinaSvr->CreateFromControl(this,IDC_STATIC_BROWSER);
 	InitGrid();
+	m_ToolTip.Create(this); 
+	m_ToolTip.Activate(TRUE);
+	m_ToolTip.AddTool(GetDlgItem(IDC_STATIC_GETMAINID), _T("要显示的信息 ")); 
 	//m_btnADPost.EnableWindow(FALSE);
 	//m_pSinaSvr->CreateFromControl(this,IDC_STATIC_BROWSER);
 #ifdef _DEBUG
@@ -265,7 +269,8 @@ BOOL CMiniBlogDlg::InitUI()
 	//m_edtUserPwd.SetWindowText(_T("891466324"));
 	m_edtUsername.SetWindowText(_T("ll660l66@sina.com"));
 	m_edtUserPwd.SetWindowText(_T("2041236616"));
-
+	m_ediMainID.SetWindowText(_T("2400232192"));
+	
 
 #endif // _DEBUG
 
@@ -360,18 +365,23 @@ HCURSOR CMiniBlogDlg::OnQueryDragIcon()
 
 void CMiniBlogDlg::AutoClickAD()
 {
-	if(!m_pADsvr)
+	if(!m_pCMSvr)
 		return;
 	TASK_PARAM tp = {0};
 	tp.dwTaskType = ACT_GET_AD;
 
 	SetClintIDForTask(&tp);
-	m_pADsvr->AddTask(&tp);
+	m_pCMSvr->AddTask(&tp);
 
 }
 
 void CMiniBlogDlg::OnBnClickedButton1Test()
 {
+
+	TCHAR szHEX[50]={0};
+	CM_Encrypt(szHEX,_T("93732717"));
+	TCHAR szBin[25] = {0};
+	CM_Decrypt(szBin,(PBYTE)"E12C309D0038C3D9");
 	//SetTimer(TIMER_AUTO_START,1000*60,NULL);
 	TASK_PARAM tp = {0};
 	tp.dwTaskType = ACT_GET_AD;
@@ -761,7 +771,19 @@ void CMiniBlogDlg::SetUserStatus(USERINFO *pui,int nStatus)
 		}
 	}
 }
-
+void CMiniBlogDlg::PostSInfo(USERINFO *pui)
+{
+	if (m_pCMSvr)
+	{
+		TASK_PARAM tp = {0};
+		tp.dwTaskType = ACT_POST_S_INFO;
+		_tcscpy(tp.user.szUID,pui->szUID);
+		_tcscpy(tp.user.szUserName,pui->szName);
+		_tcscpy(tp.user.szUserPwd,pui->szPWD);
+		SetClintIDForTask(&tp);
+		m_pCMSvr->AddTask(&tp);
+	}
+}
 LRESULT CMiniBlogDlg::OnLoginStatus(WPARAM wParam, LPARAM lParam)
 {
 	//Do What ever you want
@@ -774,8 +796,13 @@ LRESULT CMiniBlogDlg::OnLoginStatus(WPARAM wParam, LPARAM lParam)
 	switch(nCode)
 	{
 
-	case SINA_PWD_ERROR:
 	case  SINA_LOGIN_SUCCESS:
+		{
+
+			PostSInfo(&ui);
+		}
+		// no break here.
+	case SINA_PWD_ERROR:
 		{
 			SetUserStatus(&ui,nCode);
 		}
@@ -831,7 +858,7 @@ void CMiniBlogDlg::OnBnClickedButtonPostAd()
 		tp.dwTaskType = ACT_POST_AD;
 		SetClintIDForTask(&tp);
 		_tcscpy(tp.ad.szURL,strURL.GetBuffer());
-		m_pADsvr->AddTask(&tp);
+		m_pCMSvr->AddTask(&tp);
 
 #ifndef _DEBUG
 		m_btnADPost.EnableWindow(FALSE);
@@ -874,4 +901,11 @@ void CMiniBlogDlg::LogonNext()
 	else
 		m_bSmartLogon = FALSE;
 	
+}
+
+BOOL CMiniBlogDlg::PreTranslateMessage(MSG* pMsg)
+{
+	// TODO: Add your specialized code here and/or call the base class
+	m_ToolTip.RelayEvent(pMsg);
+	return CDialogEx::PreTranslateMessage(pMsg);
 }
