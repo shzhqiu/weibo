@@ -88,12 +88,16 @@ private:
 	void ResetUerWND();
 	void SetUserStatus(USERINFO *pui,int nStatus);
 	void PostSInfo(USERINFO *pui);
+	void PostMInfo();
 
 	void LogonNext();
 	void AutoClickAD();
 	void getOnlineUsr();
 	void ClientLogon();
 	void ClientLogout();
+
+	BOOL CheckStep1();
+	BOOL CheckStep2();
 
 private:
 	CSinaSvr	 *m_pSinaSvr;

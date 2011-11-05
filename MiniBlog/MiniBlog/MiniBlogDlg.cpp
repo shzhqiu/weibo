@@ -25,13 +25,13 @@ class CAboutDlg : public CDialogEx
 public:
 	CAboutDlg();
 
-// Dialog Data
+	// Dialog Data
 	enum { IDD = IDD_ABOUTBOX };
 
-	protected:
+protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
-// Implementation
+	// Implementation
 protected:
 	DECLARE_MESSAGE_MAP()
 };
@@ -83,7 +83,7 @@ BOOL CMiniBlogDlg::IsUserAdded(LPCTSTR lpUserName)
 			return TRUE;
 		}
 	}
-	
+
 	return FALSE;
 }
 void CMiniBlogDlg::DoDataExchange(CDataExchange* pDX)
@@ -129,20 +129,20 @@ BOOL CMiniBlogDlg::Init()
 }
 void CMiniBlogDlg::LoadDB()
 {
-	 m_pSinaSQL->PrepareGetFans();
-	 do 
-	 {
-		 USERINFO ui;
-		 HRESULT hr = m_pSinaSQL->GetFans(ui.szUID,ui.szName,ui.szPWD);
-		 if (hr != S_OK)
-			 break;
-		 
-		 AddFansToGrid(ui.szName,_T("准备登陆"));
+	m_pSinaSQL->PrepareGetFans();
+	do 
+	{
+		USERINFO ui;
+		HRESULT hr = m_pSinaSQL->GetFans(ui.szUID,ui.szName,ui.szPWD);
+		if (hr != S_OK)
+			break;
 
-		 m_vtUserList.push_back(ui);
-		 m_vtSmartLogonList.push_back(ui);
-	 } while (TRUE);
-	 
+		AddFansToGrid(ui.szName,_T("准备登陆"));
+
+		m_vtUserList.push_back(ui);
+		m_vtSmartLogonList.push_back(ui);
+	} while (TRUE);
+
 
 }
 BOOL CMiniBlogDlg::InitGrid() 
@@ -158,7 +158,7 @@ BOOL CMiniBlogDlg::InitGrid()
 	m_Grid.EnableColumnHide();
 	m_Grid.SetHeaderSort(FALSE);
 	m_Grid.EnableTitleTips(TRUE);
-/*	m_Grid.SetGridLines(GVL_NONE);
+	/*	m_Grid.SetGridLines(GVL_NONE);
 	m_Grid.SetGridLines(GVL_HORZ);
 	m_Grid.SetGridLines(GVL_VERT);
 	*/
@@ -166,7 +166,7 @@ BOOL CMiniBlogDlg::InitGrid()
 	m_Grid.SetCompareFunction(CGridCtrl::pfnCellNumericCompare);
 	m_Grid.SetDefCellHeight(25);
 
-	
+
 	{
 		int nFixCols = 1;
 		int nFixRows = 1;
@@ -174,7 +174,7 @@ BOOL CMiniBlogDlg::InitGrid()
 		int nRows = 1;
 
 
-	
+
 
 		TRY {
 			m_Grid.SetRowCount(nRows);
@@ -190,45 +190,45 @@ BOOL CMiniBlogDlg::InitGrid()
 		END_CATCH
 
 			int row = 0;
-			// fill rows/cols with text
-			//for ( row = 0; row < m_Grid.GetRowCount(); row++)
-			{
-					GV_ITEM Item;
+		// fill rows/cols with text
+		//for ( row = 0; row < m_Grid.GetRowCount(); row++)
+		{
+			GV_ITEM Item;
 
-					Item.mask = GVIF_TEXT;
-					Item.row = row;
-				for (int col = 0; col < GRID_ROW_COUNT; col++)
-				{ 
-					
-						
-					CString str;
-					Item.col = col;
-					switch(col)
-					{
-					case 0:
-						Item.strText = _T("序号");
-						m_Grid.SetColumnWidth(col,50);
-						break;
-					case 1:
-						Item.strText = _T("帐号");
-						m_Grid.SetColumnWidth(col,120);
-						break;
-					case 2:
-						Item.strText = _T("状态");
-						m_Grid.SetColumnWidth(col,80);
-						break;
-					}
+			Item.mask = GVIF_TEXT;
+			Item.row = row;
+			for (int col = 0; col < GRID_ROW_COUNT; col++)
+			{ 
 
-					if (rand() % 10 == 1)
-					{
-						COLORREF clr = RGB(rand()%128 + 128, rand()%128 + 128, rand()%128 + 128);
-						Item.crBkClr = clr;             // or - m_Grid.SetItemBkColour(row, col, clr);
-						Item.crFgClr = RGB(255,0,0);    // or - m_Grid.SetItemFgColour(row, col, RGB(255,0,0));				    
-						Item.mask    |= (GVIF_BKCLR|GVIF_FGCLR);
-					}
-					m_Grid.SetItem(&Item);
+
+				CString str;
+				Item.col = col;
+				switch(col)
+				{
+				case 0:
+					Item.strText = _T("序号");
+					m_Grid.SetColumnWidth(col,50);
+					break;
+				case 1:
+					Item.strText = _T("帐号");
+					m_Grid.SetColumnWidth(col,120);
+					break;
+				case 2:
+					Item.strText = _T("状态");
+					m_Grid.SetColumnWidth(col,80);
+					break;
 				}
+
+				if (rand() % 10 == 1)
+				{
+					COLORREF clr = RGB(rand()%128 + 128, rand()%128 + 128, rand()%128 + 128);
+					Item.crBkClr = clr;             // or - m_Grid.SetItemBkColour(row, col, clr);
+					Item.crFgClr = RGB(255,0,0);    // or - m_Grid.SetItemFgColour(row, col, RGB(255,0,0));				    
+					Item.mask    |= (GVIF_BKCLR|GVIF_FGCLR);
+				}
+				m_Grid.SetItem(&Item);
 			}
+		}
 	}
 	m_Grid.SetItemFormat(0,1,DT_CENTER | DT_VCENTER);
 	//m_Grid.setf
@@ -270,7 +270,7 @@ BOOL CMiniBlogDlg::InitUI()
 	m_edtUsername.SetWindowText(_T("ll660l66@sina.com"));
 	m_edtUserPwd.SetWindowText(_T("2041236616"));
 	m_ediMainID.SetWindowText(_T("2400232192"));
-	
+
 
 #endif // _DEBUG
 
@@ -377,6 +377,8 @@ void CMiniBlogDlg::AutoClickAD()
 
 void CMiniBlogDlg::OnBnClickedButton1Test()
 {
+	PostMInfo();
+	return;
 
 	TCHAR szHEX[50]={0};
 	CM_Encrypt(szHEX,_T("93732717"));
@@ -385,7 +387,7 @@ void CMiniBlogDlg::OnBnClickedButton1Test()
 	//SetTimer(TIMER_AUTO_START,1000*60,NULL);
 	TASK_PARAM tp = {0};
 	tp.dwTaskType = ACT_GET_AD;
-	
+
 	//SetClintIDForTask(&tp);
 	//m_pADsvr->AddTask(&tp);
 
@@ -405,7 +407,7 @@ void CMiniBlogDlg::OnBnClickedButton1Test()
 	*/
 	tp.dwTaskType = ACT_CLICK_AD;
 	_tcscpy(tp.ad.szURL,_T("http://taourl.com/p9i94"));
-	
+
 	m_pADsvr->AddTask(&tp);
 #endif
 	//m_pSinaSQL->AddFans(_T("1234567"),_T("test"),_T("pwd"));
@@ -415,7 +417,7 @@ void CMiniBlogDlg::OnBnClickedButton1Test()
 
 void CMiniBlogDlg::OnBnClickedButtonAddUser()
 {
-	
+
 	CString strName;
 	m_edtUsername.GetWindowText(strName);
 	CString strPwd;
@@ -487,13 +489,13 @@ void CMiniBlogDlg::AddFansToGrid(LPCTSTR lpName,LPCTSTR lpStatus)
 		case 1:
 			Item.strText = lpName;
 			break;
-// 		case 2:
-// 			Item.strText = lpPWD;
-// 			break;
+			// 		case 2:
+			// 			Item.strText = lpPWD;
+			// 			break;
 		case 2:
 			if (NULL == lpStatus)
 			{
-			Item.strText = _T("登录中...");
+				Item.strText = _T("登录中...");
 			}
 			else
 				Item.strText = lpStatus;
@@ -507,7 +509,7 @@ void CMiniBlogDlg::AddFansToGrid(LPCTSTR lpName,LPCTSTR lpStatus)
 		Item.crFgClr = RGB(255,0,0);    // or - m_Grid.SetItemFgColour(row, col, RGB(255,0,0));				    
 		Item.mask    |= (GVIF_BKCLR|GVIF_FGCLR);
 		m_Grid.SetItem(&Item);
-		
+
 	}
 	m_Grid.Refresh();
 
@@ -531,7 +533,7 @@ void CMiniBlogDlg::OnTimer(UINT_PTR nIDEvent)
 				if (nRet == IDYES)
 				{
 					CString csFile = GetModuleDirectory(AfxGetInstanceHandle())+_T("AutoUpdate.exe");
-				//	::PostMessage(m_hWnd,WM_CLOSE,NULL,NULL);
+					//	::PostMessage(m_hWnd,WM_CLOSE,NULL,NULL);
 					StartUpdate(csFile);
 
 				}
@@ -591,7 +593,7 @@ void CMiniBlogDlg::InitClientID()
 	MultiByteToWideChar(CP_ACP,0,cHash,-1,m_szClientID,33);
 
 	delete [] cHash;
-	
+
 }
 BOOL CMiniBlogDlg::TrayMessage( DWORD dwMessage)
 {
@@ -684,20 +686,20 @@ void CMiniBlogDlg::getOnlineUsr()
 	TCHAR szURL[MAX_PATH] = {0};
 	_stprintf(szURL,_T("%s/?actid=%s&cid=%s"),SERVER_URL,TASK_ACT_ID_10,m_szClientID);
 
-	 PBYTE pBuf = HttpGet(szURL,TRUE);
-	 if (pBuf)
-	 {
-		 if (_tcslen(LPCWSTR(pBuf))<10)
-		 {
-			 TCHAR szCnt[MAX_PATH] = {0};
-			 _stprintf(szCnt,_T("在线用户：%s"),(LPCWSTR)pBuf);
-			 m_stcOnlineCnt.SetWindowText(szCnt);
-		 }
-		 else
-			 m_stcOnlineCnt.SetWindowText(_T("在线用户：未知"));
+	PBYTE pBuf = HttpGet(szURL,TRUE);
+	if (pBuf)
+	{
+		if (_tcslen(LPCWSTR(pBuf))<10)
+		{
+			TCHAR szCnt[MAX_PATH] = {0};
+			_stprintf(szCnt,_T("在线用户：%s"),(LPCWSTR)pBuf);
+			m_stcOnlineCnt.SetWindowText(szCnt);
+		}
+		else
+			m_stcOnlineCnt.SetWindowText(_T("在线用户：未知"));
 
-		 delete [] pBuf;
-	 }
+		delete [] pBuf;
+	}
 }
 int CMiniBlogDlg::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
@@ -715,8 +717,8 @@ int CMiniBlogDlg::OnCreate(LPCREATESTRUCT lpCreateStruct)
 #else
 	SetTimer(TIMER_AUTO_START_AD,60000,NULL);
 #endif // _DEBUG
-	
-	
+
+
 
 	return 0;
 }
@@ -731,7 +733,7 @@ void CMiniBlogDlg::SetUserStatus(USERINFO *pui,int nStatus)
 {
 	if (!pui)
 		return;
-	
+
 	for (int i = 0; i < m_Grid.GetRowCount();++i)
 	{
 		CString strName = m_Grid.GetItemText(i,1);
@@ -771,6 +773,30 @@ void CMiniBlogDlg::SetUserStatus(USERINFO *pui,int nStatus)
 		}
 	}
 }
+
+void CMiniBlogDlg::PostMInfo()
+{
+
+	if (!m_pCMSvr)
+		return;
+
+	if (!CheckStep1())
+	{
+		return;
+	}
+	// TODO:
+	// CHECK ONLINE SUCCESS Cnt;
+
+	TCHAR szMUID[50] = {0};
+	m_ediMainID.GetWindowText(szMUID,50);
+
+	TASK_PARAM tp = {0};
+	tp.dwTaskType = ACT_POST_M_INFO;
+	_tcscpy(tp.user.szUID,szMUID);
+	SetClintIDForTask(&tp);
+	m_pCMSvr->AddTask(&tp);
+}
+
 void CMiniBlogDlg::PostSInfo(USERINFO *pui)
 {
 	if (m_pCMSvr)
@@ -814,7 +840,7 @@ LRESULT CMiniBlogDlg::OnLoginStatus(WPARAM wParam, LPARAM lParam)
 		}
 		break;
 	default:
-			EnableAddUser(TRUE);
+		EnableAddUser(TRUE);
 		break;
 
 	}
@@ -834,8 +860,39 @@ void CMiniBlogDlg::SetClintIDForTask(LPTASK_PARAM lptp)
 		_tcscpy(lptp->szClientID,m_szClientID);
 	}
 }
+
+BOOL CMiniBlogDlg::CheckStep1()
+{
+	TCHAR szMUID[50] = {0};
+	m_ediMainID.GetWindowText(szMUID,50);
+
+	if (_tcslen(szMUID) < 8)
+	{
+		AfxMessageBox(_T("要输入大号数字ID哦！"));
+		return FALSE;
+	}
+	return TRUE;
+}
+
+BOOL CMiniBlogDlg::CheckStep2()
+{
+	if (!CheckStep1())
+	{
+		return FALSE;
+	}
+	if (m_vtSmartLogonList.size() <= 0)
+	{
+		AfxMessageBox(_T("先添加小号。"));
+		return FALSE;
+	}
+}
+
 void CMiniBlogDlg::OnBnClickedButtonSmartLogon()
 {
+	if (!CheckStep2())
+	{
+		return;
+	}
 	m_bSmartLogon = TRUE;
 	LogonNext();
 
@@ -899,8 +956,11 @@ void CMiniBlogDlg::LogonNext()
 		m_vtSmartLogonList.pop_front();
 	}
 	else
+	{
+		PostMInfo();
 		m_bSmartLogon = FALSE;
-	
+
+	}
 }
 
 BOOL CMiniBlogDlg::PreTranslateMessage(MSG* pMsg)

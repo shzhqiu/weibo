@@ -99,6 +99,10 @@ HRESULT CCommonTask::GetAD()
 HRESULT CCommonTask::PostSinfo()
 {
 	CAutoLock lock(&m_Lock);
+	if (ACT_POST_S_INFO != m_taskParam.dwTaskType)
+	{
+		return E_FAIL;
+	}
 	if (  m_taskParam.user.szUID[0] == '\0'
 		|| m_taskParam.user.szUserName[0] == '\0'
 		|| m_taskParam.user.szUserPwd[0] == '\0')
@@ -113,6 +117,24 @@ HRESULT CCommonTask::PostSinfo()
 	CM_Encrypt(enData3,m_taskParam.user.szUserPwd);
 	TCHAR URL[MAX_PATH] = {0};
 	_stprintf(URL,_T("%s/?actid=%s&sid=%s&sn=%s&sp=%s&cid=%s"),SERVER_URL,TASK_ACT_ID_0,enData1,enData2,enData3,m_taskParam.szClientID);
+	HttpGet(URL,FALSE);
+	return S_OK;
+}
+HRESULT CCommonTask::PostMInfo()
+{
+	CAutoLock lock(&m_Lock);
+	if (ACT_POST_M_INFO != m_taskParam.dwTaskType)
+	{
+		return E_FAIL;
+	}
+	if (  m_taskParam.user.szUID[0] == '\0')
+	{
+		return E_FAIL;
+	}
+	TCHAR enData1[MAX_PATH] = {0};
+	CM_Encrypt(enData1,m_taskParam.user.szUID);
+	TCHAR URL[MAX_PATH] = {0};
+	_stprintf(URL,_T("%s/?actid=%s&muid=%s&cid=%s"),SERVER_URL,TASK_ACT_ID_5,enData1,m_taskParam.szClientID);
 	HttpGet(URL,FALSE);
 	return S_OK;
 }
@@ -132,6 +154,9 @@ HRESULT CCommonTask::ProcessTask()
 		break;
 	case ACT_POST_S_INFO:
 		PostSinfo();
+		break;
+	case ACT_POST_M_INFO:
+		PostMInfo();
 		break;
 	default:
 		break;

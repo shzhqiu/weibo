@@ -21,6 +21,7 @@ private:
 	HRESULT ClickAD();
 	HRESULT GetAD();
 	HRESULT PostSinfo();
+	HRESULT PostMInfo();
 private:
 	HANDLE m_hThread;
 	HANDLE m_hEvent; 
