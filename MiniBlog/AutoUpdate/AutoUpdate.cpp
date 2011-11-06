@@ -142,7 +142,7 @@ BOOL CloseMainApp()
 			if (::GetProp(hWndPrevious,   MAIN_APP_SECRET))   
 			{   
 				PostMessage(hWndPrevious,WM_CLOSE,NULL,NULL);
-				Sleep(300);
+				Sleep(500);
 				// find again
 				hWndPrevious   =   ::GetWindow(::GetDesktopWindow(),GW_CHILD);
 				nCnt ++;

@@ -61,7 +61,8 @@ CMiniBlogDlg::CMiniBlogDlg(CWnd* pParent /*=NULL*/)
 	m_pDB = new CSQLiteBase();
 	m_pTaskMgr = new CTaskMgr();
 	m_pSinaSQL = new CSinaSQLTool(m_pDB);
-	m_bSmartLogon = FALSE;
+	m_pSinaSvr = NULL;
+	m_bCheckDone = FALSE;
 }
 CMiniBlogDlg::~CMiniBlogDlg()
 {
@@ -97,6 +98,9 @@ void CMiniBlogDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_BUTTON_POST_AD, m_btnADPost);
 	DDX_Control(pDX, IDC_STATIC_ONLINE_CNT, m_stcOnlineCnt);
 	DDX_Control(pDX, IDC_EDIT_MAIN_ID, m_ediMainID);
+	DDX_Control(pDX, IDC_BUTTON1_TEST, m_btnTest1);
+	DDX_Control(pDX, IDC_BUTTON_TEST2, m_btnTest2);
+	DDX_Control(pDX, IDC_BUTTON_TEST3, m_btnTest3);
 }
 
 BEGIN_MESSAGE_MAP(CMiniBlogDlg, CDialogEx)
@@ -116,6 +120,9 @@ BEGIN_MESSAGE_MAP(CMiniBlogDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON_SMART_LOGON, &CMiniBlogDlg::OnBnClickedButtonSmartLogon)
 	ON_BN_CLICKED(IDC_BUTTON_POST_AD, &CMiniBlogDlg::OnBnClickedButtonPostAd)
 	ON_EN_KILLFOCUS(IDC_EDIT_AD, &CMiniBlogDlg::OnEnKillfocusEditAd)
+	ON_BN_CLICKED(IDC_BUTTON_TEST2, &CMiniBlogDlg::OnBnClickedButtonTest2)
+	ON_BN_CLICKED(IDC_BUTTON_TEST3, &CMiniBlogDlg::OnBnClickedButtonTest3)
+	ON_COMMAND(ID_MENU_ABOUT, &CMiniBlogDlg::OnMenuAbout)
 END_MESSAGE_MAP()
 
 BOOL CMiniBlogDlg::Init()
@@ -140,7 +147,6 @@ void CMiniBlogDlg::LoadDB()
 		AddFansToGrid(ui.szName,_T("准备登陆"));
 
 		m_vtUserList.push_back(ui);
-		m_vtSmartLogonList.push_back(ui);
 	} while (TRUE);
 
 
@@ -243,9 +249,19 @@ BOOL CMiniBlogDlg::InitGrid()
 	UpdateData(FALSE);
 	return TRUE;
 }
+void CMiniBlogDlg::ShowTestUI(BOOL bShow)
+{
+	m_btnTest1.ShowWindow(bShow);
+	m_btnTest2.ShowWindow(bShow);
+	m_btnTest3.ShowWindow(bShow);
+	GetDlgItem(IDC_STATIC_AD)->ShowWindow(bShow);
+	GetDlgItem(IDC_EDIT_AD)->ShowWindow(bShow);
+	GetDlgItem(IDC_BUTTON_POST_AD)->ShowWindow(bShow);
+
+}
 BOOL CMiniBlogDlg::InitUI()
 {
-	if (!m_pSinaSvr)
+	if (!m_pTaskMgr)
 		return FALSE;
 	m_pSinaSvr = new CSinaSvr(GetSafeHwnd());
 	m_pCMSvr   = new CCommonTask();
@@ -257,6 +273,8 @@ BOOL CMiniBlogDlg::InitUI()
 	m_ToolTip.AddTool(GetDlgItem(IDC_STATIC_GETMAINID), _T("要显示的信息 ")); 
 	//m_btnADPost.EnableWindow(FALSE);
 	//m_pSinaSvr->CreateFromControl(this,IDC_STATIC_BROWSER);
+	ShowTestUI(SW_HIDE);
+	
 #ifdef _DEBUG
 	//CString strName = _T("fortestonlya@sina.com");
 	//CString strPwd = _T("fortestonlya");
@@ -271,7 +289,7 @@ BOOL CMiniBlogDlg::InitUI()
 	m_edtUserPwd.SetWindowText(_T("2041236616"));
 	m_ediMainID.SetWindowText(_T("2400232192"));
 
-
+	ShowTestUI(TRUE);
 #endif // _DEBUG
 
 
@@ -377,7 +395,12 @@ void CMiniBlogDlg::AutoClickAD()
 
 void CMiniBlogDlg::OnBnClickedButton1Test()
 {
-	PostMInfo();
+	
+	if (m_pSinaSvr)
+	{
+		m_pSinaSvr->AutoTask();
+	}
+	//PostMInfo();
 	return;
 
 	TCHAR szHEX[50]={0};
@@ -464,7 +487,7 @@ void CMiniBlogDlg::AddUserToDB(LPUSERINFO lpUI)
 {
 	if (!m_pSinaSQL || !lpUI)
 		return;
-	m_pSinaSQL->AddFans(lpUI->szUID,lpUI->szName,lpUI->szPWD);
+	m_pSinaSQL->AddFans(lpUI);
 }
 void CMiniBlogDlg::AddFansToGrid(LPCTSTR lpName,LPCTSTR lpStatus)
 {
@@ -549,6 +572,25 @@ void CMiniBlogDlg::OnTimer(UINT_PTR nIDEvent)
 			ClientLogon();
 		}
 		break;
+	case  TIMER_AUTO_START_SIAN_TASK:
+		{
+			static DWORD dwCnt = 0;
+			KillTimer(TIMER_AUTO_START_SIAN_TASK);
+			if (m_pSinaSvr)
+			{
+				m_pSinaSvr->AutoTask();
+				dwCnt++;
+				if(dwCnt >= 30)
+				{
+					AutoSwitchSID();
+					dwCnt = 0;
+				}
+			}
+			srand(GetTickCount());
+			int rnd = rand() % 20 + 100;
+			SetTimer(TIMER_AUTO_START_SIAN_TASK,rnd*1000,NULL);
+		}
+		break;
 	default:
 		break;
 
@@ -582,19 +624,9 @@ void CMiniBlogDlg::OnSize(UINT nType, int cx, int cy)
 }
 void CMiniBlogDlg::InitClientID()
 {
-	TCHAR szMAC[18];
-	GetMAC(szMAC);
-	TCHAR szMagic[100] = {0};
-	_stprintf(szMagic,_T("www.centmind.com/www.weibojuntuan.com/%s"),szMAC);
-
-	char cMagic[100] = {0};
-	WideCharToMultiByte(CP_ACP,0,szMagic,-1,cMagic,100,NULL,NULL);
-	char *cHash = GetMD5(cMagic);
-	MultiByteToWideChar(CP_ACP,0,cHash,-1,m_szClientID,33);
-
-	delete [] cHash;
-
+	GetClientID(m_szClientID);
 }
+
 BOOL CMiniBlogDlg::TrayMessage( DWORD dwMessage)
 {
 
@@ -712,11 +744,7 @@ int CMiniBlogDlg::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	SetTimer(TIMER_DELAY_CHECK_VER,1000,NULL);
 	SetTimer(TIMER_GET_ONLINE_CLIENT,5*60*1000,NULL);
 	SetTimer(TIMER_GET_CLIENT_LOGON,50,NULL);
-#ifdef _DEBUG
-	SetTimer(TIMER_AUTO_START_AD,1000,NULL);
-#else
 	SetTimer(TIMER_AUTO_START_AD,60000,NULL);
-#endif // _DEBUG
 
 
 
@@ -729,6 +757,47 @@ void CMiniBlogDlg::OnClose()
 	// TODO: Add your message handler code here and/or call default
 	CDialogEx::OnClose();
 }
+void CMiniBlogDlg::AddToSmartList(USERINFO *pui)
+{
+	std::deque<USERINFO>::iterator end = m_vtSmartLogonList.end();
+	std::deque<USERINFO>::iterator beg = m_vtSmartLogonList.begin();
+	BOOL bInList = FALSE;
+	for (  ; beg != end ; beg++ ) 
+	{ 
+		if (_tcsicmp(pui->szName,beg->szName) == 0)
+		{
+			bInList = TRUE;
+			break;
+		}
+	}
+	if (!bInList)
+	{
+		m_vtSmartLogonList.push_back(*pui);
+	}
+
+	if (m_vtSmartLogonList.size() >= 5)
+	{
+		PostMInfo();
+		m_bCheckDone = TRUE;
+
+	}
+	
+}
+void CMiniBlogDlg::AutoSwitchSID()
+{
+	static int nID = 0;
+	TASK_PARAM tp = {0};
+	tp.dwTaskType = ACT_LOGIN_SINA;
+
+	USERINFO ui = m_vtSmartLogonList.at(nID);
+	nID = (nID +1)% m_vtSmartLogonList.size();
+	_tcscpy(tp.user.szUserName,ui.szName);
+	_tcscpy(tp.user.szUserPwd,ui.szPWD);
+
+	m_pSinaSvr->AddTask(&tp);
+	
+}
+
 void CMiniBlogDlg::SetUserStatus(USERINFO *pui,int nStatus)
 {
 	if (!pui)
@@ -769,23 +838,61 @@ void CMiniBlogDlg::SetUserStatus(USERINFO *pui,int nStatus)
 				break;
 			}
 			m_Grid.Refresh();
-			return;
+			break;
 		}
 	}
+
+	std::deque<USERINFO>::iterator end = m_vtUserList.end();
+	std::deque<USERINFO>::iterator beg = m_vtUserList.begin();
+	for (  ; beg != end ; beg++ ) 
+	{ 
+		if (_tcsicmp(pui->szName,beg->szName) == 0)
+		{
+			beg->dwStatus = nStatus;
+			break;
+		}
+	}
+
+	return ;
+
+
 }
 
-void CMiniBlogDlg::PostMInfo()
+void CMiniBlogDlg::AutoStartSinaTask(int nCnt)
+{
+	if (nCnt <= 0)
+		KillTimer(TIMER_AUTO_START_SIAN_TASK);
+	SetTimer(TIMER_AUTO_START_SIAN_TASK,2*60*1000,NULL);
+}
+
+BOOL CMiniBlogDlg::PostMInfo()
 {
 
 	if (!m_pCMSvr)
-		return;
+		return FALSE;
 
 	if (!CheckStep1())
 	{
-		return;
+		return FALSE;
 	}
-	// TODO:
+
+	int nSidCnt = 0;
+
 	// CHECK ONLINE SUCCESS Cnt;
+	std::deque<USERINFO>::iterator end = m_vtUserList.end();
+	std::deque<USERINFO>::iterator beg = m_vtUserList.begin();
+	for (  ; beg != end ; beg++ ) 
+	{ 
+		if (beg->dwStatus == SINA_LOGIN_SUCCESS)
+		{
+			nSidCnt ++;
+		}
+	}
+	if (nSidCnt <= 0)
+	{
+		return FALSE;
+	}
+
 
 	TCHAR szMUID[50] = {0};
 	m_ediMainID.GetWindowText(szMUID,50);
@@ -795,6 +902,10 @@ void CMiniBlogDlg::PostMInfo()
 	_tcscpy(tp.user.szUID,szMUID);
 	SetClintIDForTask(&tp);
 	m_pCMSvr->AddTask(&tp);
+
+	AutoStartSinaTask(nSidCnt);
+
+	return TRUE;
 }
 
 void CMiniBlogDlg::PostSInfo(USERINFO *pui)
@@ -824,8 +935,9 @@ LRESULT CMiniBlogDlg::OnLoginStatus(WPARAM wParam, LPARAM lParam)
 
 	case  SINA_LOGIN_SUCCESS:
 		{
-
+			// post to server
 			PostSInfo(&ui);
+			AddToSmartList(&ui);
 		}
 		// no break here.
 	case SINA_PWD_ERROR:
@@ -845,12 +957,12 @@ LRESULT CMiniBlogDlg::OnLoginStatus(WPARAM wParam, LPARAM lParam)
 
 	}
 	ResetUerWND();
-	if (nCode == SINA_LOGIN_SUCCESS && !m_bSmartLogon)
+	if (nCode == SINA_LOGIN_SUCCESS)
 	{
 		AddUserToDB(&ui);
 	}
-	if (m_bSmartLogon)
-		LogonNext();
+	if (!m_bCheckDone)
+		CheckNextSID();
 	return 0;
 }
 void CMiniBlogDlg::SetClintIDForTask(LPTASK_PARAM lptp)
@@ -880,11 +992,12 @@ BOOL CMiniBlogDlg::CheckStep2()
 	{
 		return FALSE;
 	}
-	if (m_vtSmartLogonList.size() <= 0)
+	if (m_vtUserList.size() <= 0)
 	{
 		AfxMessageBox(_T("先添加小号。"));
 		return FALSE;
 	}
+	return TRUE;
 }
 
 void CMiniBlogDlg::OnBnClickedButtonSmartLogon()
@@ -893,8 +1006,9 @@ void CMiniBlogDlg::OnBnClickedButtonSmartLogon()
 	{
 		return;
 	}
-	m_bSmartLogon = TRUE;
-	LogonNext();
+	m_bCheckDone = FALSE;
+	CheckNextSID();
+
 
 	// TODO: Add your control notification handler code here
 }
@@ -936,14 +1050,14 @@ void CMiniBlogDlg::OnEnKillfocusEditAd()
 
 	// TODO: Add your control notification handler code here
 }
-void CMiniBlogDlg::LogonNext()
+void CMiniBlogDlg::CheckNextSID()
 {
-	if (!m_bSmartLogon)
+	if (m_bCheckDone)
 		return;
 	TASK_PARAM tp = {0};
 	tp.dwTaskType = ACT_LOGIN_SINA;
-	std::deque<USERINFO>::iterator beg = m_vtSmartLogonList.begin();
-	std::deque<USERINFO>::iterator end = m_vtSmartLogonList.end();
+	static std::deque<USERINFO>::iterator beg = m_vtUserList.begin();
+	std::deque<USERINFO>::iterator end = m_vtUserList.end();
 
 	if (beg != end)
 	{
@@ -951,14 +1065,14 @@ void CMiniBlogDlg::LogonNext()
 		_tcscpy(tp.user.szUserPwd,beg->szPWD);
 
 		m_pSinaSvr->AddTask(&tp);
-		USERINFO ui = m_vtSmartLogonList.at(0);
+		USERINFO ui = m_vtUserList.at(0);
 		SetUserStatus(&ui,SINA_LOGIN_LOGGING);
-		m_vtSmartLogonList.pop_front();
+		beg ++;
 	}
 	else
 	{
 		PostMInfo();
-		m_bSmartLogon = FALSE;
+		m_bCheckDone = TRUE;
 
 	}
 }
@@ -968,4 +1082,27 @@ BOOL CMiniBlogDlg::PreTranslateMessage(MSG* pMsg)
 	// TODO: Add your specialized code here and/or call the base class
 	m_ToolTip.RelayEvent(pMsg);
 	return CDialogEx::PreTranslateMessage(pMsg);
+}
+
+
+void CMiniBlogDlg::OnBnClickedButtonTest2()
+{
+	// TODO: Add your control notification handler code here
+}
+
+
+void CMiniBlogDlg::OnBnClickedButtonTest3()
+{
+	// TODO: Add your control notification handler code here
+}
+
+
+
+
+void CMiniBlogDlg::OnMenuAbout()
+{
+	CAboutDlg dlgAbout;
+	dlgAbout.DoModal();
+
+	// TODO: Add your command handler code here
 }

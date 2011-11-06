@@ -2,7 +2,7 @@
 #include "SQLiteBase.h"
 
 #define DB_PATH_MINIBLOG _T("client.db")
-#define DB_VERSION        20111006
+#define DB_VERSION        _T("20111006")
 
 CSQLiteBase::CSQLiteBase(void)
 {
@@ -37,9 +37,9 @@ HRESULT CSQLiteBase::InitDB()
 		return E_FAIL;
 	static TCHAR initsql[][MAX_PATH]=
 	{
-		{_T("CREATE TABLE tblSubfans( ID INTEGER PRIMARY KEY, uid VCHAR(255), name VCHAR(255), pwd VCHAR(255),lastlogin DATETIME,status INTEGER,type INTEGER);")},
-		{_T("CREATE TABLE tblMainID( ID INTEGER PRIMARY KEY, uid VCHAR(255),lastlogin DATETIME,status INTEGER,type INTEGER);")},
-		{_T("CREATE TABLE tblVersion( ID INTEGER PRIMARY KEY, ver VCHAR(255));")},
+		{_T("CREATE TABLE tblSubfans( ID INTEGER PRIMARY KEY, uid VCHAR(255)  unique, name VCHAR(255), pwd VCHAR(255),lastlogin DATETIME,status INTEGER,type INTEGER);")},
+		{_T("CREATE TABLE tblMainID( ID INTEGER PRIMARY KEY, uid VCHAR(255)  unique,lastlogin DATETIME,status INTEGER,type INTEGER);")},
+		{_T("CREATE TABLE tblVersion(ver VCHAR(255)) ;")},
 
 	};
 
@@ -51,6 +51,16 @@ HRESULT CSQLiteBase::InitDB()
 		ExecuteSQL(initsql[i]);
 	}
 	CommitTrans();
+	SetDBVersion();
+	return S_OK;
+
+}
+HRESULT CSQLiteBase::SetDBVersion()
+{
+	HRESULT hr = E_FAIL;
+	TCHAR szSql[MAX_PATH] = {0};
+	_stprintf(szSql,_T("insert into tblVersion (ver) values(%s)"),DB_VERSION);
+	ExecuteSQL(szSql);
 	return S_OK;
 
 }

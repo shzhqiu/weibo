@@ -12,6 +12,9 @@
 #endif
 
 
+
+
+
 void SetRegistKey()
 {
 	TCHAR regname[]=_T("MIME\\Database\\Content Type\\"); 
@@ -59,6 +62,8 @@ CMiniBlogApp::CMiniBlogApp()
 {
 	// support Restart Manager
 	m_dwRestartManagerSupportFlags = AFX_RESTART_MANAGER_SUPPORT_RESTART;
+
+
 
 	// TODO: add construction code here,
 	// Place all significant initialization in InitInstance
@@ -141,6 +146,7 @@ BOOL CMiniBlogApp::InitInstance()
 	//SetRegistryKey(_T("Local AppWizard-Generated Applications"));
 	SetRegistKey();
 
+	InitClientID();
 
 
 	CMiniBlogDlg dlg;

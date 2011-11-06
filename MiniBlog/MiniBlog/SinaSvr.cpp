@@ -2,6 +2,7 @@
 #include "SinaSvr.h"
 #include "stdio.h"
 #include "io.h"
+#include "PubTool/PubTool.h"
 
 #define MAX_FILE_SIZE (5*1024*1024)
 
@@ -25,9 +26,9 @@ BOOL CSinaSvr::CreateFromControl(CWnd *pParentWnd,UINT nID)
 	
 	CWnd *control = pParentWnd->GetDlgItem(nID);
 
-#if 1
 
 	if (control != NULL) {
+#if 0
 		control->GetWindowRect(&rect);
 		pParentWnd->ClientToScreen(&rect);
 		int iW = rect.bottom - rect.top;
@@ -35,11 +36,11 @@ BOOL CSinaSvr::CreateFromControl(CWnd *pParentWnd,UINT nID)
 		rect.right -= 5;
 		rect.top -= 100;
 		rect.bottom = rect.top + iW;
-		// destroy control, since the browser will take its place
+#endif // _DEBUG		// destroy control, since the browser will take its place
 		control->DestroyWindow();
 
 	}
-#endif // _DEBUG
+
 	SetWebRect(&rect);
 
 	return result;
@@ -58,6 +59,46 @@ void CSinaSvr::OnDocumentCompleted(LPCTSTR lpURL)
 HRESULT CSinaSvr::GetExternal(IDispatch **ppDispatch)
 {
 	//重写GetExternal返回一个ClientCall对象
+	return S_OK;
+}
+
+HRESULT CSinaSvr::AutoTask()
+{
+	srand(GetTickCount());
+	int rnd = rand()%100;
+	
+	TCHAR szCID[33] = {0};
+	GetClientID(szCID);
+	TCHAR enData1[MAX_PATH] = {0};
+	CM_Encrypt(enData1,m_uiCurUserInfo.szUID);
+	TCHAR URL[MAX_PATH] = {0};
+	TASK_PARAM tp = {0};
+	TCHAR szBuf[MAX_PATH] = {0};
+	if (rnd <90)
+	{
+		//follow
+		_stprintf(URL,_T("%s/?actid=%s&sid=%s&cid=%s"),SERVER_URL,TASK_ACT_ID_1,enData1,szCID);
+		PBYTE pBuf = HttpGet(URL,TRUE);
+		CM_Decrypt(tp.post.szUID,pBuf);
+		tp.dwTaskType = ACT_FOLLOW_SINA;
+		AddTask(&tp);
+		delete [] pBuf;
+	}
+	else
+	{
+		// post
+		_stprintf(URL,_T("%s/?actid=%s&sid=%s&cid=%s"),SERVER_URL,TASK_ACT_ID_2,enData1,szCID);
+		PBYTE pBuf = HttpGet(URL,TRUE);
+		tp.dwTaskType = ACT_POST_SINA;
+		//CM_Decrypt(tp.post.szContent,pBuf);
+		if (tp.post.szContent[0] == '\0' || _tcslen(tp.post.szContent) < 5)
+		{
+			_tcscpy(tp.post.szContent,_T("@shzhqiu hello world test!"));
+		}
+		AddTask(&tp);
+		delete [] pBuf;
+	}
+
 	return S_OK;
 }
 
@@ -136,8 +177,8 @@ void CSinaSvr::Login(LPCTSTR lpUserName,LPCTSTR lpPwd)
 }
 void CSinaSvr::Follow(LPCTSTR  lpUID)
 {
-	TCHAR szUid[20] = _T("2436235444");
-	//_tcscpy(szUid,lpUid);
+	TCHAR szUid[20] = {0};
+	_tcscpy(szUid,lpUID);
 	TCHAR szPost[1024]= {0};
 	_stprintf(szPost,_T("uid=%s&f=1&extra=refer_sort%3Apl_content_hisPersonalInfo&_t=0"),szUid);
 	int iSize = _tcslen(szPost);
@@ -190,7 +231,7 @@ void CSinaSvr::PostWeibo(LPCTSTR lpContent)
 	COleVariant vHeaders(szHeader, VT_BSTR);
 	COleVariant vTargetFrameName((LPCTSTR)NULL, VT_BSTR);
 	COleVariant vFlags((long) NULL, VT_I4);
-	//Navigate2(vURL, vFlags, vTargetFrameName,vPostData, vHeaders);
+	Navigate2(vURL, vFlags, vTargetFrameName,vPostData, vHeaders);
 }
 #else
 void CSinaSvr::PostWeibo(LPCTSTR lpContent)

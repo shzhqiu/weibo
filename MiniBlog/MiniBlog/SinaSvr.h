@@ -24,6 +24,8 @@ public:
 	// weibo service base
 public:
 	virtual HRESULT AddTask(LPTASK_PARAM lpTaskParam);
+	HRESULT	AutoTask();
+
 	// browserbase
 public:
 	virtual HWND GetHWND(){return m_hWnd;}

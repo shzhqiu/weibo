@@ -53,7 +53,7 @@ private:
 
 	int GetFieldIndexByName(LPCWSTR lpszFieldName);
 	inline BOOL CheckFieldIndex(int nIndex);
-
+	HRESULT	SetDBVersion();
 
 	BOOL CheckAdjustBindFieldIndex(int& nIndex);
 private:

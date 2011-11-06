@@ -105,6 +105,11 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\MiniBlog\PubTool\base64.cpp" />
+    <ClCompile Include="..\MiniBlog\PubTool\Des.cpp" />
+    <ClCompile Include="..\MiniBlog\PubTool\md5.cpp" />
+    <ClCompile Include="..\MiniBlog\PubTool\md5wrapper.cpp" />
+    <ClCompile Include="..\MiniBlog\PubTool\PubTool.cpp" />
     <ClCompile Include="AutoUpdate.cpp" />
     <ClCompile Include="AutoUpdateDlg.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -113,6 +118,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\MiniBlog\CommonDef.h" />
     <ClInclude Include="AutoUpdate.h" />
     <ClInclude Include="AutoUpdateDlg.h" />
     <ClInclude Include="Resource.h" />

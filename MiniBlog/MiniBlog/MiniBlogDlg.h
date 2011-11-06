@@ -18,12 +18,12 @@
 
 
 #define  APP_NAME _T("WEIBOJUNTUAN_CENTMIND_COM")
-#define  TIMER_AUTO_START_AD       (WM_USER+2011)
-#define  MYWM_NOTIFYICON		   (WM_USER+2012)
-#define  TIMER_DELAY_CHECK_VER     (WM_USER+2013)
-#define  TIMER_GET_ONLINE_CLIENT   (WM_USER+2014)
-#define  TIMER_GET_CLIENT_LOGON    (WM_USER+2015)
-
+#define  TIMER_AUTO_START_AD        (WM_USER+2011)
+#define  MYWM_NOTIFYICON		    (WM_USER+2012)
+#define  TIMER_DELAY_CHECK_VER      (WM_USER+2013)
+#define  TIMER_GET_ONLINE_CLIENT    (WM_USER+2014)
+#define  TIMER_GET_CLIENT_LOGON     (WM_USER+2015)
+#define  TIMER_AUTO_START_SIAN_TASK (WM_USER+2016)
 
 #define  WM_USER_LOGIN_STATUS    (WM_USER+2020)
 
@@ -88,9 +88,11 @@ private:
 	void ResetUerWND();
 	void SetUserStatus(USERINFO *pui,int nStatus);
 	void PostSInfo(USERINFO *pui);
-	void PostMInfo();
-
-	void LogonNext();
+	BOOL PostMInfo();
+	void AutoStartSinaTask(int nCnt);
+	void AutoSwitchSID();
+	void AddToSmartList(USERINFO *pui);
+	void CheckNextSID();
 	void AutoClickAD();
 	void getOnlineUsr();
 	void ClientLogon();
@@ -98,7 +100,7 @@ private:
 
 	BOOL CheckStep1();
 	BOOL CheckStep2();
-
+	void ShowTestUI(BOOL bShow);
 private:
 	CSinaSvr	 *m_pSinaSvr;
 	CCommonTask		 *m_pCMSvr;
@@ -111,25 +113,31 @@ private:
 	std::deque<USERINFO> m_vtUserList;
 	std::deque<USERINFO> m_vtSmartLogonList;
 	USERINFO  m_CurUser;
-	BOOL      m_bSmartLogon;
+	BOOL      m_bCheckDone;
 	CToolTipCtrl   m_ToolTip; 
 
 
 public:
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	afx_msg void OnDestroy();
-//	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-//	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnClose();
-	CButton m_btnAddUser;
 	afx_msg void OnBnClickedButtonSmartLogon();
-	CEdit m_edtADURL;
 	afx_msg void OnBnClickedButtonPostAd();
 	afx_msg void OnEnKillfocusEditAd();
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
+	afx_msg void OnBnClickedButtonTest2();
+	afx_msg void OnBnClickedButtonTest3();
+	
+
+	CButton m_btnAddUser;
 	CButton m_btnADPost;
 	CStatic m_stcOnlineCnt;
 	CEdit m_ediMainID;
-	virtual BOOL PreTranslateMessage(MSG* pMsg);
+	CEdit m_edtADURL;
+	CButton m_btnTest1;
+	CButton m_btnTest2;
+	CButton m_btnTest3;
+	afx_msg void OnMenuAbout();
 };

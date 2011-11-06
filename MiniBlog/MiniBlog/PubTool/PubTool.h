@@ -1,6 +1,7 @@
 #pragma once
 #define SafeDelete(p) {if(p) delete p;p = NULL;}
-#include "md5wrapper.h"
+
+#include <math.h>
 
 int GetMAC(LPTSTR  pMac,int index = 0);
 char* GetMD5(char* pSrc);
@@ -10,5 +11,8 @@ void StartUpdate(LPCTSTR lpUpdateEXE);
 CString GetModuleDirectory(HMODULE hModule);
 void CM_Encrypt(LPWSTR lpOut,LPCWSTR lpIn);
 void CM_Decrypt(LPWSTR lpOut,PBYTE lpIn);
+void InitClientID();
+LPCTSTR GetClientID(LPTSTR lpCID);
+
 
 

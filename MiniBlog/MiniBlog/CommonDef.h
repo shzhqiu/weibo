@@ -1,7 +1,12 @@
 #pragma once
 #define CURRENT_VERSION (1.0f)
+#ifdef _DEBUG
 #define SERVER_URL _T("1appbo.sinaapp.com")
-#define SERVER_UPDATE_URL _T("1.weibodata.sinaapp.com/version.txt")
+#else
+#define SERVER_URL _T("weibodata.sinaapp.com")
+#endif // _DEBUG
+
+#define SERVER_UPDATE_URL _T("weibojuntuan.com/version.txt")
 
 
 

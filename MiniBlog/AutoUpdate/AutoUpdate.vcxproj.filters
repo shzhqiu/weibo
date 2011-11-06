@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx</Extensions>
     </Filter>
+    <Filter Include="PubTool">
+      <UniqueIdentifier>{42de4a02-7d53-43c1-a688-f7051c432be7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AutoUpdate.cpp">
@@ -23,6 +26,21 @@
     </ClCompile>
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MiniBlog\PubTool\PubTool.cpp">
+      <Filter>PubTool</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MiniBlog\PubTool\base64.cpp">
+      <Filter>PubTool</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MiniBlog\PubTool\Des.cpp">
+      <Filter>PubTool</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MiniBlog\PubTool\md5wrapper.cpp">
+      <Filter>PubTool</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MiniBlog\PubTool\md5.cpp">
+      <Filter>PubTool</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -37,6 +55,9 @@
     </ClInclude>
     <ClInclude Include="stdafx.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MiniBlog\CommonDef.h">
+      <Filter>PubTool</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

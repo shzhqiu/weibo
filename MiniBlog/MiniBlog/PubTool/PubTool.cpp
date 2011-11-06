@@ -5,6 +5,7 @@
 #include "md5wrapper.h"
 #include "Des.h"
 #include "base64.h"
+#include "../CommonDef.h"
 
 #pragma comment(lib,"netapi32.lib")
 
@@ -15,6 +16,8 @@
 #define HTTP_HEADERLEN 7
 
 static char g_key[]={'%','r','4','H','J','9','o','0'};
+TCHAR g_szClientID[33] = {0};
+TCHAR g_szUpdateURL[256] = {0};
 
 
 BOOL MyParseURL(LPCTSTR pstrURL,LPTSTR pServer, LPTSTR pObject, int & nPort)
@@ -159,20 +162,134 @@ char *GetMD5(char * p)
 	pRetString = md5.getHashFromString(p);
 	return pRetString;
 }
-BOOL CheckForUpdate()
+
+#pragma comment (lib, "Version.lib")   
+
+BOOL GetMyProcessVer(CString& strver)   //用来取得自己的版本号   
+{   
+	TCHAR strfile[MAX_PATH];   
+	GetModuleFileName(NULL, strfile, sizeof(strfile));  //这里取得自己的文件名   
+
+	DWORD dwVersize = 0;   
+	DWORD dwHandle = 0;   
+
+	dwVersize = GetFileVersionInfoSize(strfile, &dwHandle);   
+	if (dwVersize == 0)   
+	{   
+		return FALSE;   
+	}   
+
+	TCHAR szVerBuf[8192] = _T("");   
+	if (GetFileVersionInfo(strfile, 0, dwVersize, szVerBuf))   
+	{   
+		VS_FIXEDFILEINFO* pInfo;   
+		UINT nInfoLen;   
+
+		if (VerQueryValue(szVerBuf, _T("\\"), (LPVOID*)&pInfo, &nInfoLen))  
+		{  
+			/*
+			dwms1 = HIWORD(pInfo->dwFileVersionMS);
+			dwms2 = LOWORD(pInfo->dwFileVersionMS);
+			dwls1 = HIWORD(pInfo->dwFileVersionLS);
+			dwls2 = LOWORD(pInfo->dwFileVersionLS);
+			*/
+			strver.Format(_T("%d.%d.%d.%d"), HIWORD(pInfo->dwFileVersionMS),    
+				LOWORD(pInfo->dwFileVersionMS), HIWORD(pInfo->dwFileVersionLS),   
+				LOWORD(pInfo->dwFileVersionLS));   
+
+			return TRUE;   
+		}   
+	}   
+	return FALSE;   
+}  
+BOOL GetFileVersion(LPCTSTR lpVer, LONGLONG& lVer)
 {
-	PBYTE pBuf = HttpGet(SERVER_UPDATE_URL,TRUE);
-	if(!pBuf || _tcslen((LPCWSTR)pBuf)>4)
+	DWORD dwVer[4]={0};
+
+	if (!lpVer)
 		return FALSE;
 
-	float fVer = atof((char*)pBuf);
-	delete [] pBuf;
-	if (fVer > CURRENT_VERSION)
+	// 解析字条串.
+	_stscanf(lpVer, _T("%d.%d.%d.%d"), &dwVer[0], &dwVer[1], &dwVer[2], &dwVer[3]);
+	DWORD dwMver = MAKELONG(dwVer[1], dwVer[0]);
+	DWORD dwSver = MAKELONG(dwVer[3], dwVer[2]);
+	lVer = dwMver;
+	lVer <<= 32;
+	lVer |= dwSver;
+
+	return TRUE;
+}
+
+int CompareVersion(LPCTSTR szFile1, LPCTSTR szFile2)
+{
+	LONGLONG lVer1, lVer2;
+	LONGLONG nRet = -1;
+	// 获取两个文件的版本.
+	if (!GetFileVersion(szFile1, lVer1))
+		return nRet;
+	if (!GetFileVersion(szFile2, lVer2))
+		return nRet;		
+
+	// 计算.
+	nRet = (lVer1 - lVer2);
+
+	if (nRet > 0)
 	{
-		return TRUE;
+		return 1;
 	}
-	else
+	if (nRet < 0)
+	{
+		return -1;
+	}
+
+	return 0;
+}
+
+BOOL GetOnlineInfo(LPTSTR lpVer,LPTSTR lpURL,LPTSTR lpNote)
+{
+	if (!lpVer || !lpURL || ! lpNote)
+	{
 		return FALSE;
+	}
+	PBYTE pBuf = HttpGet(SERVER_UPDATE_URL,TRUE);
+	int nLen = 0;
+	if(!pBuf )
+		return FALSE;
+	nLen = _tcslen((LPCWSTR)pBuf);
+	if (nLen >1024)
+		return FALSE;
+
+	TCHAR szBuf[1024] = {0};
+	CM_Decrypt(szBuf,pBuf);
+	nLen = _tcslen(szBuf);
+	delete [] pBuf;
+
+	TCHAR *ch = NULL;
+	TCHAR *ch1 = szBuf;
+
+	ch = _tcsstr(szBuf,_T(","));
+	_tcsncpy(lpVer,szBuf+1,ch - szBuf -1);	
+	ch1 = _tcsstr(ch+1,_T(","));
+	_tcsncpy(lpURL,ch+1,ch1 - ch -1);
+	_tcsncpy(lpNote,ch1+1,nLen - 2 - (ch1 - szBuf));
+
+	return TRUE;
+
+}
+
+BOOL CheckForUpdate()
+{
+	
+	TCHAR szLastVer[16] = {0};
+	TCHAR szNote[1024] = {0};
+	GetOnlineInfo(szLastVer,g_szUpdateURL,szNote);
+
+	CString strCurVer;
+	GetMyProcessVer(strCurVer);
+
+	int nRet = CompareVersion(szLastVer,strCurVer.GetBuffer());
+	
+	return (nRet > 0);
 }
 
 PBYTE HttpGet(LPTSTR lpURL,BOOL bNeedRet)
@@ -209,11 +326,14 @@ PBYTE HttpGet(LPTSTR lpURL,BOOL bNeedRet)
 	if (hRequest) 
 		bResults = WinHttpSendRequest( hRequest, szHeader,-1, szPost, nLen,nLen,0);
 
-	if (bNeedRet)
+	pBuf = new BYTE[1024*1024];
+	ZeroMemory(pBuf,1024*1024);
+	DWORD dwLen;
+	GetHttpResponse(pBuf,dwLen,hRequest);
+	if (!bNeedRet)
 	{
-		pBuf = new BYTE[1024*1024];
-		DWORD dwLen;
-		GetHttpResponse(pBuf,dwLen,hRequest);
+		delete[] pBuf;
+		pBuf = NULL;
 	}
 
 	//WriteResponseInfo(pBuf,_T("out.txt"));
@@ -235,13 +355,8 @@ void StartUpdate(LPCTSTR lpUpdateEXE)
 	si.cb = sizeof(si);
 	ZeroMemory( &pi, sizeof(pi) );
 
-	TCHAR temp = _T('\"');
-	CString strCmdLine;
-	strCmdLine = CString(temp) + lpUpdateEXE + CString(temp);
-	TCHAR* p_CmdLine;
-	//p_CmdLine=strCmdLine.GetBuffer(strCmdLine.GetLength());
-	if( !CreateProcess( NULL, // No module name (use command line). 
-		strCmdLine.GetBuffer(),		  // Command line. 
+	if( !CreateProcess( lpUpdateEXE, // No module name (use command line). 
+		g_szUpdateURL,		  // Command line. 
 		NULL,             // Process handle not inheritable. 
 		NULL,             // Thread handle not inheritable. 
 		FALSE,            // Set handle inheritance to FALSE. 
@@ -252,7 +367,9 @@ void StartUpdate(LPCTSTR lpUpdateEXE)
 		&pi )             // Pointer to PROCESS_INFORMATION structure.
 		) 
 	{
-		//AfxMessageBox( "CreateProcess failed." );
+#ifdef _DEBUG
+		AfxMessageBox( _T("CreateProcess failed." ));
+#endif // _DEBUG
 		return;
 	}
 	// Wait until child process exits.
@@ -343,4 +460,25 @@ void CM_Decrypt(LPWSTR lpOut,PBYTE lpIn)
 	Des_Go(szOut, szBuff, strlen(szBuff), g_key, sizeof(g_key), DES_DECRYPT);
 	MultiByteToWideChar(CP_ACP,0,szOut,-1,lpOut,MAX_PATH);
 
+}
+
+
+void InitClientID()
+{
+	TCHAR szMAC[18];
+	GetMAC(szMAC);
+	TCHAR szMagic[100] = {0};
+	_stprintf(szMagic,_T("www.centmind.com/www.weibojuntuan.com/%s"),szMAC);
+
+	char cMagic[100] = {0};
+	WideCharToMultiByte(CP_ACP,0,szMagic,-1,cMagic,100,NULL,NULL);
+	char *cHash = GetMD5(cMagic);
+	MultiByteToWideChar(CP_ACP,0,cHash,-1,g_szClientID,33);
+	delete [] cHash;
+}
+LPCTSTR GetClientID(LPTSTR lpCID)
+{
+	if (lpCID)
+		_tcscpy(lpCID,g_szClientID);
+	return lpCID;
 }

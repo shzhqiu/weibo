@@ -139,11 +139,20 @@ CString GetModuleDirectory()
 	strFilePath = strFilePath.Mid(0,iStart + 1);
 	return strFilePath;	
 }
-
+extern BOOL GetOnlineInfo(LPTSTR lpVer,LPTSTR lpURL,LPTSTR lpNote);
 DWORD CAutoUpdateDlg::DoDownLoadThread(void)
 {
 	CString csCurDir = GetModuleDirectory()+UPDATE_PACKAGE;
 	DeleteFile(csCurDir.GetBuffer());
+	if (m_csDownloadURL.GetLength() <= 0)
+	{
+		TCHAR szLastVer[16] = {0};
+		TCHAR szUpdateURL[256] = {0};
+		TCHAR szNote[1024] = {0};
+		if(GetOnlineInfo(szLastVer,szUpdateURL,szNote))
+			m_csDownloadURL = szUpdateURL;
+
+	}
 	if(DownloadFile(m_csDownloadURL,csCurDir))
 	{
 		m_bFileOK = TRUE;
@@ -161,7 +170,7 @@ BOOL CAutoUpdateDlg::DownloadFile(LPCTSTR lpURL,LPCTSTR lpDestFile)
 	CInternetSession sessionDownload;
 	try
 	{
-		CHttpFile* pFile = (CHttpFile*)sessionDownload.OpenURL(_T("http://weibodata-update.stor.sinaapp.com/MiniBlog.zip"),1,INTERNET_FLAG_TRANSFER_BINARY|INTERNET_FLAG_RELOAD|INTERNET_FLAG_DONT_CACHE);
+		CHttpFile* pFile = (CHttpFile*)sessionDownload.OpenURL(lpURL,1,INTERNET_FLAG_TRANSFER_BINARY|INTERNET_FLAG_RELOAD|INTERNET_FLAG_DONT_CACHE);
 		CString   query = _T("");
 		pFile->QueryInfo(HTTP_QUERY_CONTENT_LENGTH,query);
 		long file_len=_ttol(query);
