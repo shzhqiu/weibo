@@ -28,7 +28,7 @@ BOOL CSinaSvr::CreateFromControl(CWnd *pParentWnd,UINT nID)
 
 
 	if (control != NULL) {
-#if 0
+#ifdef _DEBUG
 		control->GetWindowRect(&rect);
 		pParentWnd->ClientToScreen(&rect);
 		int iW = rect.bottom - rect.top;
@@ -36,7 +36,8 @@ BOOL CSinaSvr::CreateFromControl(CWnd *pParentWnd,UINT nID)
 		rect.right -= 5;
 		rect.top -= 100;
 		rect.bottom = rect.top + iW;
-#endif // _DEBUG		// destroy control, since the browser will take its place
+#endif // _DEBUG
+		// destroy control, since the browser will take its place
 		control->DestroyWindow();
 
 	}
@@ -90,7 +91,10 @@ HRESULT CSinaSvr::AutoTask()
 		_stprintf(URL,_T("%s/?actid=%s&sid=%s&cid=%s"),SERVER_URL,TASK_ACT_ID_2,enData1,szCID);
 		PBYTE pBuf = HttpGet(URL,TRUE);
 		tp.dwTaskType = ACT_POST_SINA;
-		//CM_Decrypt(tp.post.szContent,pBuf);
+		char szBuf[MAX_PATH*2] = {0};
+		CM_Decrypt(tp.post.szContent,pBuf);
+	//	WCHAR szInfo[MAX_PATH] = {0};
+	//	UTF_8ToUnicode(szInfo,pBuf);
 		if (tp.post.szContent[0] == '\0' || _tcslen(tp.post.szContent) < 5)
 		{
 			_tcscpy(tp.post.szContent,_T("@shzhqiu hello world test!"));
@@ -384,16 +388,35 @@ HRESULT CSinaSvr::CheckLoginStatus(CString URL)
 			hr = i_Dispath-> QueryInterface(IID_IHTMLInputElement,(void   **)&iInput); 
 			CComBSTR str;
 			iInput->get_value(&str);
-			SetActionStatus(SINA_PWD_ERROR);
-			SetAction(ACT_NULL);
-			PostMessage(m_hWnd,WM_USER_LOGIN_STATUS,(WPARAM)&m_uiCurUserInfo,SINA_PWD_ERROR);
+			if (_tcsicmp(str,_T("80")) == 0)
+			{
+				return FALSE;
+				SetActionStatus(SINA_STATUS_UNNORMAL);
+				SetAction(ACT_NULL);
+				PostMessage(m_hWnd,WM_USER_LOGIN_STATUS,(WPARAM)&m_uiCurUserInfo,SINA_STATUS_UNNORMAL);
+
+			}
+			else if (_tcsicmp(str,_T("101")) == 0)
+			{
+				SetActionStatus(SINA_PWD_ERROR);
+				SetAction(ACT_NULL);
+				PostMessage(m_hWnd,WM_USER_LOGIN_STATUS,(WPARAM)&m_uiCurUserInfo,SINA_PWD_ERROR);
+			}
 			return S_OK;
 			
 		}
 		return S_OK;
 	}
 	
+	// http://weibo.com/unfreeze
+	if (URL.Find(_T("http://weibo.com/unfreeze"),0) >= 0)
+	{
+		SetActionStatus(SINA_STATUS_UNNORMAL);
+		SetAction(ACT_NULL);
+		PostMessage(m_hWnd,WM_USER_LOGIN_STATUS,(WPARAM)&m_uiCurUserInfo,SINA_STATUS_UNNORMAL);
+		return S_OK;
 
+	}
 
 	//http://weibo.com/signup/full_info.php?uid=2452258262&type=2&r=/2452258262 not regist for weibo.
 	if (URL.Find(_T("http://weibo.com/signup/full_info.php?uid="),0) >= 0)
@@ -416,7 +439,7 @@ HRESULT CSinaSvr::CheckLoginStatus(CString URL)
 	PostMessage(m_hWnd,WM_USER_LOGIN_STATUS,(WPARAM)&m_uiCurUserInfo,SINA_NONE);
 
 	
-#if 0
+#if 1
 
 
 	CString strHtml;

@@ -482,3 +482,11 @@ LPCTSTR GetClientID(LPTSTR lpCID)
 		_tcscpy(lpCID,g_szClientID);
 	return lpCID;
 }
+
+void UTF_8ToUnicode(WCHAR* pOut,char *pText)
+{
+	char* uchar = (char *)pOut;
+
+	uchar[1] = ((pText[0] & 0x0F) << 4) + ((pText[1] >> 2) & 0x0F);
+	uchar[0] = ((pText[1] & 0x03) << 6) + (pText[2] & 0x3F);
+}

@@ -11,15 +11,48 @@ m_pSQLBase(pSQLBase)
 CSinaSQLTool::~CSinaSQLTool(void)
 {
 }
+
+HRESULT CSinaSQLTool::AddMInfo(LPCTSTR lpID)
+{
+	HRESULT hr = E_FAIL;
+	if (!m_pSQLBase || ! lpID)
+		return hr;
+
+	
+	// check if exist
+	TCHAR szSql[MAX_PATH] = {0};
+	_stprintf(szSql,_T("SELECT * FROM tblMainID where uid = %s ;"),lpID);
+	hr = m_pSQLBase->ExecuteSQL(szSql);
+	if (SUCCEEDED(hr))
+	{
+		hr = m_pSQLBase->Reset();
+	}
+	if (!m_pSQLBase->IsEof())
+	{
+		hr = UpdateMIDLastLogin(lpID);
+		return hr;
+	}
+
+
+	// insert
+	hr = m_pSQLBase->PrepareSQL(_T("INSERT INTO tblMainID (uid,lastlogin,type) VALUES(?,datetime(),1);"));
+
+
+	hr = m_pSQLBase->BindFieldValue(0,lpID); 
+	hr |= m_pSQLBase->ExecuteSQL();
+
+	return hr;
+}
 HRESULT CSinaSQLTool::AddFans(LPUSERINFO lpUI)
 {
 	HRESULT hr = E_FAIL;
-	if (!m_pSQLBase)
+	if (!m_pSQLBase || !lpUI)
 		return hr;
 
 	// check if exist
-
-	hr = m_pSQLBase->ExecuteSQL(_T("SELECT * FROM tblSubfans where uid = ?;)"));
+	TCHAR szSql[MAX_PATH] = {0};
+	_stprintf(szSql,_T("SELECT * FROM tblSubfans where uid = %s ;"),lpUI->szUID);
+	hr = m_pSQLBase->ExecuteSQL(szSql);
 	if (SUCCEEDED(hr))
 	{
 		hr = m_pSQLBase->Reset();
@@ -90,6 +123,45 @@ HRESULT CSinaSQLTool::UpdateLastLogin(LPWSTR lpUID,DWORD dwStatus)
 	hr = m_pSQLBase->BindFieldValue(0,dwStatus); 
 	hr = m_pSQLBase->BindFieldValue(1,lpUID); 
 	hr |= m_pSQLBase->ExecuteSQL();
+
+	return hr;
+
+}
+HRESULT CSinaSQLTool::UpdateMIDLastLogin(LPCTSTR lpID)
+{
+	HRESULT hr = E_FAIL;
+	if (!m_pSQLBase || ! lpID)
+		return hr;
+
+
+	hr = m_pSQLBase->PrepareSQL(_T("update tblMainID set lastlogin = datetime() where uid= ?;"));
+
+
+	hr = m_pSQLBase->BindFieldValue(0,lpID); 
+	hr |= m_pSQLBase->ExecuteSQL();
+
+	return hr;
+}
+HRESULT CSinaSQLTool::GetMainID(LPTSTR lpID)
+{
+	HRESULT hr = E_FAIL;
+	if (!m_pSQLBase || ! lpID)
+		return hr;
+
+
+	hr = m_pSQLBase->PrepareSQL(_T("select uid from tblMainID limit 1;"));
+	hr |= m_pSQLBase->ExecuteSQL();
+	if (m_pSQLBase->IsEof())
+	{
+		return S_FALSE;
+	}
+	if (SUCCEEDED(hr))
+	{
+		hr = m_pSQLBase->Reset();
+	}
+
+	DWORD dwSize = 1024;
+	hr |= m_pSQLBase->GetFieldValue(0,lpID,&dwSize);
 
 	return hr;
 

@@ -13,6 +13,7 @@ CSQLiteBase::CSQLiteBase(void)
 
 CSQLiteBase::~CSQLiteBase(void)
 {
+	Close();
 	sqlite3_close(m_pSQLiteDB); 
 }
 
@@ -38,8 +39,8 @@ HRESULT CSQLiteBase::InitDB()
 	static TCHAR initsql[][MAX_PATH]=
 	{
 		{_T("CREATE TABLE tblSubfans( ID INTEGER PRIMARY KEY, uid VCHAR(255)  unique, name VCHAR(255), pwd VCHAR(255),lastlogin DATETIME,status INTEGER,type INTEGER);")},
-		{_T("CREATE TABLE tblMainID( ID INTEGER PRIMARY KEY, uid VCHAR(255)  unique,lastlogin DATETIME,status INTEGER,type INTEGER);")},
-		{_T("CREATE TABLE tblVersion(ver VCHAR(255)) ;")},
+		{_T("CREATE TABLE tblMainID( ID INTEGER PRIMARY KEY, uid VCHAR(255)  unique,lastlogin DATETIME,type INTEGER);")},
+		{_T("CREATE TABLE tblVersion(ver VCHAR(255)) unique ;")},
 
 	};
 

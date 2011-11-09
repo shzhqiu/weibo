@@ -13,6 +13,7 @@ void CM_Encrypt(LPWSTR lpOut,LPCWSTR lpIn);
 void CM_Decrypt(LPWSTR lpOut,PBYTE lpIn);
 void InitClientID();
 LPCTSTR GetClientID(LPTSTR lpCID);
+void UTF_8ToUnicode(WCHAR* pOut,char *pText);
 
 
 

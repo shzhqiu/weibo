@@ -76,6 +76,7 @@ private:
 	BOOL InitGrid();
 	void AddFansToGrid(LPCTSTR lpName,LPCTSTR lpStatus);
 	void AddUserToDB(LPUSERINFO lpUI);
+	void AddMIDToDB(LPCTSTR lpMUID);
 	void InitClientID();
 	BOOL TrayMessage( DWORD dwMessage);
 	void LoadDB();
@@ -85,6 +86,7 @@ private:
 	
 	BOOL IsUserAdded(LPCTSTR lpUserName);
 	void EnableAddUser(BOOL bEnable);
+	void EnableMID(BOOL bEnable);
 	void ResetUerWND();
 	void SetUserStatus(USERINFO *pui,int nStatus);
 	void PostSInfo(USERINFO *pui);
@@ -101,6 +103,7 @@ private:
 	BOOL CheckStep1();
 	BOOL CheckStep2();
 	void ShowTestUI(BOOL bShow);
+	void ShowStartBtn(BOOL bShow);
 private:
 	CSinaSvr	 *m_pSinaSvr;
 	CCommonTask		 *m_pCMSvr;
@@ -140,4 +143,6 @@ public:
 	CButton m_btnTest2;
 	CButton m_btnTest3;
 	afx_msg void OnMenuAbout();
+	afx_msg void OnBnClickedButtonStop();
+	CButton m_btnStop;
 };

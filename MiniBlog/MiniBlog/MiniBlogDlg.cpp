@@ -101,6 +101,7 @@ void CMiniBlogDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_BUTTON1_TEST, m_btnTest1);
 	DDX_Control(pDX, IDC_BUTTON_TEST2, m_btnTest2);
 	DDX_Control(pDX, IDC_BUTTON_TEST3, m_btnTest3);
+	DDX_Control(pDX, IDC_BUTTON_STOP, m_btnStop);
 }
 
 BEGIN_MESSAGE_MAP(CMiniBlogDlg, CDialogEx)
@@ -123,6 +124,7 @@ BEGIN_MESSAGE_MAP(CMiniBlogDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON_TEST2, &CMiniBlogDlg::OnBnClickedButtonTest2)
 	ON_BN_CLICKED(IDC_BUTTON_TEST3, &CMiniBlogDlg::OnBnClickedButtonTest3)
 	ON_COMMAND(ID_MENU_ABOUT, &CMiniBlogDlg::OnMenuAbout)
+	ON_BN_CLICKED(IDC_BUTTON_STOP, &CMiniBlogDlg::OnBnClickedButtonStop)
 END_MESSAGE_MAP()
 
 BOOL CMiniBlogDlg::Init()
@@ -274,6 +276,18 @@ BOOL CMiniBlogDlg::InitUI()
 	//m_btnADPost.EnableWindow(FALSE);
 	//m_pSinaSvr->CreateFromControl(this,IDC_STATIC_BROWSER);
 	ShowTestUI(SW_HIDE);
+	ShowStartBtn(TRUE);
+	TCHAR szMID[MAX_PATH]={0};
+	m_pSinaSQL->GetMainID(szMID);
+	if (szMID[0] != '\0')
+	{
+		m_ediMainID.SetWindowText(szMID);
+	}
+
+#ifdef _DEBUG
+	else
+		m_ediMainID.SetWindowText(_T("2400232192"));
+#endif // _DEBUG
 	
 #ifdef _DEBUG
 	//CString strName = _T("fortestonlya@sina.com");
@@ -285,9 +299,9 @@ BOOL CMiniBlogDlg::InitUI()
 	*/
 	//m_edtUsername.SetWindowText(_T("xb209x20@sina.com"));
 	//m_edtUserPwd.SetWindowText(_T("891466324"));
+	//zied17z1@sina.com  1112503006
 	m_edtUsername.SetWindowText(_T("ll660l66@sina.com"));
 	m_edtUserPwd.SetWindowText(_T("2041236616"));
-	m_ediMainID.SetWindowText(_T("2400232192"));
 
 	ShowTestUI(TRUE);
 #endif // _DEBUG
@@ -395,11 +409,13 @@ void CMiniBlogDlg::AutoClickAD()
 
 void CMiniBlogDlg::OnBnClickedButton1Test()
 {
+	TASK_PARAM tp = {0};
+	tp.dwTaskType = ACT_GET_AD;
+
+	SetClintIDForTask(&tp);
+	m_pCMSvr->AddTask(&tp);
 	
-	if (m_pSinaSvr)
-	{
-		m_pSinaSvr->AutoTask();
-	}
+
 	//PostMInfo();
 	return;
 
@@ -408,7 +424,6 @@ void CMiniBlogDlg::OnBnClickedButton1Test()
 	TCHAR szBin[25] = {0};
 	CM_Decrypt(szBin,(PBYTE)"E12C309D0038C3D9");
 	//SetTimer(TIMER_AUTO_START,1000*60,NULL);
-	TASK_PARAM tp = {0};
 	tp.dwTaskType = ACT_GET_AD;
 
 	//SetClintIDForTask(&tp);
@@ -476,6 +491,12 @@ void CMiniBlogDlg::ResetUerWND()
 	m_edtUserPwd.SetWindowText(_T(""));
 
 }
+
+void CMiniBlogDlg::EnableMID(BOOL bEnable)
+{
+	GetDlgItem(IDC_EDIT_MAIN_ID)->EnableWindow(bEnable);
+}
+
 void CMiniBlogDlg::EnableAddUser(BOOL bEnable)
 {
 	m_btnAddUser.EnableWindow(bEnable);
@@ -904,10 +925,20 @@ BOOL CMiniBlogDlg::PostMInfo()
 	m_pCMSvr->AddTask(&tp);
 
 	AutoStartSinaTask(nSidCnt);
+	EnableMID(FALSE);
+	AddMIDToDB(szMUID);
+
 
 	return TRUE;
 }
+void CMiniBlogDlg::AddMIDToDB(LPCTSTR lpMUID)
+{
+	if (m_pSinaSQL && lpMUID)
+	{
+		m_pSinaSQL->AddMInfo(lpMUID);
+	}
 
+}
 void CMiniBlogDlg::PostSInfo(USERINFO *pui)
 {
 	if (m_pCMSvr)
@@ -939,23 +970,22 @@ LRESULT CMiniBlogDlg::OnLoginStatus(WPARAM wParam, LPARAM lParam)
 			PostSInfo(&ui);
 			AddToSmartList(&ui);
 		}
-		// no break here.
+		break;
 	case SINA_PWD_ERROR:
 		{
-			SetUserStatus(&ui,nCode);
 		}
 		break;
 	case SINA_NONE:
 		{
-			EnableAddUser(TRUE);
-
 		}
 		break;
 	default:
-		EnableAddUser(TRUE);
+		SetUserStatus(&ui,nCode);
 		break;
 
 	}
+	SetUserStatus(&ui,nCode);
+	EnableAddUser(TRUE);
 	ResetUerWND();
 	if (nCode == SINA_LOGIN_SUCCESS)
 	{
@@ -1105,4 +1135,16 @@ void CMiniBlogDlg::OnMenuAbout()
 	dlgAbout.DoModal();
 
 	// TODO: Add your command handler code here
+}
+
+
+void CMiniBlogDlg::OnBnClickedButtonStop()
+{
+	// TODO: Add your control notification handler code here
+}
+
+void  CMiniBlogDlg::ShowStartBtn(BOOL bShow)
+{
+	m_btnStop.ShowWindow(!bShow);
+	GetDlgItem(IDC_BUTTON_SMART_LOGON)->ShowWindow(bShow);
 }
