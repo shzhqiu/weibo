@@ -2,7 +2,7 @@
 #include "SQLiteBase.h"
 
 #define DB_PATH_MINIBLOG _T("client.db")
-#define DB_VERSION        _T("20111006")
+#define DB_VERSION       20111006
 
 CSQLiteBase::CSQLiteBase(void)
 {
@@ -30,6 +30,36 @@ HRESULT CSQLiteBase::OpenDB()
 }
 HRESULT CSQLiteBase::CheckVersion()
 {
+	HRESULT hr = E_FAIL;
+	hr = PrepareSQL(_T("select version from tblVersion limit 1;"));
+	hr = ExecuteSQL();
+	if (IsEof())
+	{
+		return -2;
+	}
+	if (SUCCEEDED(hr))
+	{
+		hr = Reset();
+	}
+
+	DWORD dwVersion;
+	
+	hr |= GetFieldValue(0,&dwVersion);
+
+	if (dwVersion == DB_VERSION)
+	{
+		return 0;
+	}
+
+	if (dwVersion > DB_VERSION)
+	{
+		return 1;
+	}
+	if (dwVersion < DB_VERSION)
+	{
+		return -1;
+	}
+
 	return S_FALSE;
 }
 HRESULT CSQLiteBase::InitDB()
@@ -40,7 +70,7 @@ HRESULT CSQLiteBase::InitDB()
 	{
 		{_T("CREATE TABLE tblSubfans( ID INTEGER PRIMARY KEY, uid VCHAR(255)  unique, name VCHAR(255), pwd VCHAR(255),lastlogin DATETIME,status INTEGER,type INTEGER);")},
 		{_T("CREATE TABLE tblMainID( ID INTEGER PRIMARY KEY, uid VCHAR(255)  unique,lastlogin DATETIME,type INTEGER);")},
-		{_T("CREATE TABLE tblVersion(ver VCHAR(255)) unique ;")},
+		{_T("CREATE TABLE tblVersion(version INTEGER  unique );")},
 
 	};
 
@@ -60,8 +90,27 @@ HRESULT CSQLiteBase::SetDBVersion()
 {
 	HRESULT hr = E_FAIL;
 	TCHAR szSql[MAX_PATH] = {0};
-	_stprintf(szSql,_T("insert into tblVersion (ver) values(%s)"),DB_VERSION);
-	ExecuteSQL(szSql);
+	
+	int nCheckVer = CheckVersion();
+
+	if (nCheckVer == 0)
+		return S_OK;
+	
+	if (nCheckVer == -2)
+	{
+		_stprintf(szSql,_T("insert into tblVersion (version) values (%d);"),DB_VERSION);
+		ExecuteSQL(szSql);
+		return S_OK;
+	}
+	if (nCheckVer = -1)
+	{
+		_stprintf(szSql,_T("update tblVersion set version = %d;"),DB_VERSION);
+		ExecuteSQL(szSql);
+		return S_OK;
+		// update DB
+	}
+	
+
 	return S_OK;
 
 }

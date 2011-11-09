@@ -100,8 +100,8 @@ void CMiniBlogDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_EDIT_MAIN_ID, m_ediMainID);
 	DDX_Control(pDX, IDC_BUTTON1_TEST, m_btnTest1);
 	DDX_Control(pDX, IDC_BUTTON_TEST2, m_btnTest2);
-	DDX_Control(pDX, IDC_BUTTON_TEST3, m_btnTest3);
 	DDX_Control(pDX, IDC_BUTTON_STOP, m_btnStop);
+	DDX_Control(pDX, IDC_MFCLINK_WHATISMID, m_lnkMID);
 }
 
 BEGIN_MESSAGE_MAP(CMiniBlogDlg, CDialogEx)
@@ -122,7 +122,6 @@ BEGIN_MESSAGE_MAP(CMiniBlogDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON_POST_AD, &CMiniBlogDlg::OnBnClickedButtonPostAd)
 	ON_EN_KILLFOCUS(IDC_EDIT_AD, &CMiniBlogDlg::OnEnKillfocusEditAd)
 	ON_BN_CLICKED(IDC_BUTTON_TEST2, &CMiniBlogDlg::OnBnClickedButtonTest2)
-	ON_BN_CLICKED(IDC_BUTTON_TEST3, &CMiniBlogDlg::OnBnClickedButtonTest3)
 	ON_COMMAND(ID_MENU_ABOUT, &CMiniBlogDlg::OnMenuAbout)
 	ON_BN_CLICKED(IDC_BUTTON_STOP, &CMiniBlogDlg::OnBnClickedButtonStop)
 END_MESSAGE_MAP()
@@ -255,7 +254,6 @@ void CMiniBlogDlg::ShowTestUI(BOOL bShow)
 {
 	m_btnTest1.ShowWindow(bShow);
 	m_btnTest2.ShowWindow(bShow);
-	m_btnTest3.ShowWindow(bShow);
 	GetDlgItem(IDC_STATIC_AD)->ShowWindow(bShow);
 	GetDlgItem(IDC_EDIT_AD)->ShowWindow(bShow);
 	GetDlgItem(IDC_BUTTON_POST_AD)->ShowWindow(bShow);
@@ -270,9 +268,6 @@ BOOL CMiniBlogDlg::InitUI()
 	m_pTaskMgr->SetSvr(m_pSinaSvr);
 	m_pSinaSvr->CreateFromControl(this,IDC_STATIC_BROWSER);
 	InitGrid();
-	m_ToolTip.Create(this); 
-	m_ToolTip.Activate(TRUE);
-	m_ToolTip.AddTool(GetDlgItem(IDC_STATIC_GETMAINID), _T("要显示的信息 ")); 
 	//m_btnADPost.EnableWindow(FALSE);
 	//m_pSinaSvr->CreateFromControl(this,IDC_STATIC_BROWSER);
 	ShowTestUI(SW_HIDE);
@@ -339,6 +334,13 @@ BOOL CMiniBlogDlg::OnInitDialog()
 	//  when the application's main window is not a dialog
 	SetIcon(m_hIcon, TRUE);			// Set big icon
 	SetIcon(m_hIcon, FALSE);		// Set small icon
+
+	EnableToolTips(TRUE);
+	m_ToolTip.Create(this); 
+	//m_ToolTip.
+	m_ToolTip.Activate(TRUE);
+	m_ToolTip.AddTool(GetDlgItem(IDC_BUTTON1_TEST), _T("tip test")); 
+	//m_lnkMID.
 
 	// TODO: Add extra initialization here
 	BOOL bRet = Init();

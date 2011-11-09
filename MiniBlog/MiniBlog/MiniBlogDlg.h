@@ -15,6 +15,8 @@
 #include "SQLiteBase.h"
 #include "SinaSQLTool.h"
 #include <deque>
+#include "afxlinkctrl.h"
+
 
 
 #define  APP_NAME _T("WEIBOJUNTUAN_CENTMIND_COM")
@@ -141,8 +143,8 @@ public:
 	CEdit m_edtADURL;
 	CButton m_btnTest1;
 	CButton m_btnTest2;
-	CButton m_btnTest3;
 	afx_msg void OnMenuAbout();
 	afx_msg void OnBnClickedButtonStop();
 	CButton m_btnStop;
+	CMFCLinkCtrl m_lnkMID;
 };
