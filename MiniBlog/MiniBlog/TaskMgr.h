@@ -58,6 +58,13 @@ typedef struct _tagUserInfo
 	TCHAR szUID[30];
 	TCHAR szPWD[50];
 	DWORD dwStatus;
+	_tagUserInfo()
+	{
+		ZeroMemory(szName,sizeof(TCHAR)*50);
+		ZeroMemory(szUID,sizeof(TCHAR)*30);
+		ZeroMemory(szPWD,sizeof(TCHAR)*50);
+		dwStatus = -1;
+	};
 }USERINFO,*LPUSERINFO;
 class CTaskProcessBase;  
 class CTaskMgr

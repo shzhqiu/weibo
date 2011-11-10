@@ -63,6 +63,8 @@ CMiniBlogDlg::CMiniBlogDlg(CWnd* pParent /*=NULL*/)
 	m_pSinaSQL = new CSinaSQLTool(m_pDB);
 	m_pSinaSvr = NULL;
 	m_bCheckDone = FALSE;
+	m_vtUserList.clear();
+
 }
 CMiniBlogDlg::~CMiniBlogDlg()
 {
@@ -70,16 +72,26 @@ CMiniBlogDlg::~CMiniBlogDlg()
 	SafeDelete(m_pSinaSvr);
 	SafeDelete(m_pSinaSQL);
 	SafeDelete(m_pDB);
+	
+	VCTLPUSERINFO::iterator end = m_vtUserList.end();
+	VCTLPUSERINFO::iterator beg = m_vtUserList.begin();
+	for (  ; beg != end ; beg++ ) 
+	{ 
+		LPUSERINFO pui = *beg;
+		delete pui;
+	}
+
 	m_vtUserList.clear();
 
 };
 BOOL CMiniBlogDlg::IsUserAdded(LPCTSTR lpUserName)
 {
-	std::deque<USERINFO>::iterator end = m_vtUserList.end();
-	std::deque<USERINFO>::iterator beg = m_vtUserList.begin();
+	VCTLPUSERINFO::iterator end = m_vtUserList.end();
+	VCTLPUSERINFO::iterator beg = m_vtUserList.begin();
 	for (  ; beg != end ; beg++ ) 
 	{ 
-		if (_tcsicmp(lpUserName,beg->szName) == 0)
+		LPUSERINFO pui = *beg;
+		if (_tcsicmp(lpUserName,pui->szName) == 0)
 		{
 			return TRUE;
 		}
@@ -140,14 +152,15 @@ void CMiniBlogDlg::LoadDB()
 	m_pSinaSQL->PrepareGetFans();
 	do 
 	{
-		USERINFO ui;
-		HRESULT hr = m_pSinaSQL->GetFans(ui.szUID,ui.szName,ui.szPWD);
+		LPUSERINFO pui = new USERINFO;
+		HRESULT hr = m_pSinaSQL->GetFans(pui->szUID,pui->szName,pui->szPWD);
 		if (hr != S_OK)
 			break;
 
-		AddFansToGrid(ui.szName,_T("准备登陆"));
+		AddFansToGrid(pui->szName,_T("准备登陆"));
+		
+		m_vtUserList.push_back(pui);
 
-		m_vtUserList.push_back(ui);
 	} while (TRUE);
 
 
@@ -252,9 +265,9 @@ BOOL CMiniBlogDlg::InitGrid()
 }
 void CMiniBlogDlg::ShowTestUI(BOOL bShow)
 {
-	m_btnTest1.ShowWindow(bShow);
+	m_btnTest1.ShowWindow(bShow);  
 	m_btnTest2.ShowWindow(bShow);
-	GetDlgItem(IDC_STATIC_AD)->ShowWindow(bShow);
+ 	GetDlgItem(IDC_STATIC_AD)->ShowWindow(bShow);
 	GetDlgItem(IDC_EDIT_AD)->ShowWindow(bShow);
 	GetDlgItem(IDC_BUTTON_POST_AD)->ShowWindow(bShow);
 
@@ -295,8 +308,8 @@ BOOL CMiniBlogDlg::InitUI()
 	//m_edtUsername.SetWindowText(_T("xb209x20@sina.com"));
 	//m_edtUserPwd.SetWindowText(_T("891466324"));
 	//zied17z1@sina.com  1112503006
-	m_edtUsername.SetWindowText(_T("ll660l66@sina.com"));
-	m_edtUserPwd.SetWindowText(_T("2041236616"));
+	m_edtUsername.SetWindowText(_T("zied17z1@sina.com"));
+	m_edtUserPwd.SetWindowText(_T("1112503006"));
 
 	ShowTestUI(TRUE);
 #endif // _DEBUG
@@ -518,9 +531,8 @@ void CMiniBlogDlg::AddFansToGrid(LPCTSTR lpName,LPCTSTR lpStatus)
 	m_Grid.InsertRow(_T("test"));
 	GV_ITEM Item;
 	CString str;
-	USERINFO uinfo;
-	_tcscpy(uinfo.szName,lpName);
-	m_vtUserList.push_back(uinfo);
+	LPUSERINFO uinfo = new USERINFO;
+	_tcscpy(uinfo->szName,lpName);
 	Item.mask = GVIF_TEXT;
 	Item.row = nRow;
 	for (int i = 0; i <GRID_ROW_COUNT;++i)
@@ -782,12 +794,13 @@ void CMiniBlogDlg::OnClose()
 }
 void CMiniBlogDlg::AddToSmartList(USERINFO *pui)
 {
-	std::deque<USERINFO>::iterator end = m_vtSmartLogonList.end();
-	std::deque<USERINFO>::iterator beg = m_vtSmartLogonList.begin();
+	VCTLPUSERINFO::iterator end = m_vtSmartLogonList.end();
+	VCTLPUSERINFO::iterator beg = m_vtSmartLogonList.begin();
 	BOOL bInList = FALSE;
 	for (  ; beg != end ; beg++ ) 
 	{ 
-		if (_tcsicmp(pui->szName,beg->szName) == 0)
+		LPUSERINFO pTemp = * beg;
+		if (_tcsicmp(pui->szName,pTemp->szName) == 0)
 		{
 			bInList = TRUE;
 			break;
@@ -795,7 +808,7 @@ void CMiniBlogDlg::AddToSmartList(USERINFO *pui)
 	}
 	if (!bInList)
 	{
-		m_vtSmartLogonList.push_back(*pui);
+		m_vtSmartLogonList.push_back(pui);
 	}
 
 	if (m_vtSmartLogonList.size() >= 5)
@@ -812,10 +825,10 @@ void CMiniBlogDlg::AutoSwitchSID()
 	TASK_PARAM tp = {0};
 	tp.dwTaskType = ACT_LOGIN_SINA;
 
-	USERINFO ui = m_vtSmartLogonList.at(nID);
+	LPUSERINFO pui = m_vtSmartLogonList.at(nID);
 	nID = (nID +1)% m_vtSmartLogonList.size();
-	_tcscpy(tp.user.szUserName,ui.szName);
-	_tcscpy(tp.user.szUserPwd,ui.szPWD);
+	_tcscpy(tp.user.szUserName,pui->szName);
+	_tcscpy(tp.user.szUserPwd,pui->szPWD);
 
 	m_pSinaSvr->AddTask(&tp);
 	
@@ -865,13 +878,14 @@ void CMiniBlogDlg::SetUserStatus(USERINFO *pui,int nStatus)
 		}
 	}
 
-	std::deque<USERINFO>::iterator end = m_vtUserList.end();
-	std::deque<USERINFO>::iterator beg = m_vtUserList.begin();
+	VCTLPUSERINFO::iterator end = m_vtUserList.end();
+	VCTLPUSERINFO::iterator beg = m_vtUserList.begin();
 	for (  ; beg != end ; beg++ ) 
 	{ 
-		if (_tcsicmp(pui->szName,beg->szName) == 0)
+		LPUSERINFO pTemp = *beg;
+		if (_tcsicmp(pui->szName,pTemp->szName) == 0)
 		{
-			beg->dwStatus = nStatus;
+			pTemp->dwStatus = nStatus;
 			break;
 		}
 	}
@@ -902,11 +916,12 @@ BOOL CMiniBlogDlg::PostMInfo()
 	int nSidCnt = 0;
 
 	// CHECK ONLINE SUCCESS Cnt;
-	std::deque<USERINFO>::iterator end = m_vtUserList.end();
-	std::deque<USERINFO>::iterator beg = m_vtUserList.begin();
+	VCTLPUSERINFO::iterator end = m_vtUserList.end();
+	VCTLPUSERINFO::iterator beg = m_vtUserList.begin();
 	for (  ; beg != end ; beg++ ) 
 	{ 
-		if (beg->dwStatus == SINA_LOGIN_SUCCESS)
+		LPUSERINFO pTemp = *beg;
+		if (pTemp->dwStatus == SINA_LOGIN_SUCCESS)
 		{
 			nSidCnt ++;
 		}
@@ -927,8 +942,6 @@ BOOL CMiniBlogDlg::PostMInfo()
 	m_pCMSvr->AddTask(&tp);
 
 	AutoStartSinaTask(nSidCnt);
-	EnableMID(FALSE);
-	AddMIDToDB(szMUID);
 
 
 	return TRUE;
@@ -1015,6 +1028,9 @@ BOOL CMiniBlogDlg::CheckStep1()
 		AfxMessageBox(_T("要输入大号数字ID哦！"));
 		return FALSE;
 	}
+	EnableMID(FALSE);
+	AddMIDToDB(szMUID);
+
 	return TRUE;
 }
 
@@ -1084,21 +1100,23 @@ void CMiniBlogDlg::OnEnKillfocusEditAd()
 }
 void CMiniBlogDlg::CheckNextSID()
 {
+
 	if (m_bCheckDone)
 		return;
 	TASK_PARAM tp = {0};
 	tp.dwTaskType = ACT_LOGIN_SINA;
-	static std::deque<USERINFO>::iterator beg = m_vtUserList.begin();
-	std::deque<USERINFO>::iterator end = m_vtUserList.end();
+	static VCTLPUSERINFO::iterator beg = m_vtUserList.begin();
+	VCTLPUSERINFO::iterator end = m_vtUserList.end();
 
 	if (beg != end)
 	{
-		_tcscpy(tp.user.szUserName,beg->szName);
-		_tcscpy(tp.user.szUserPwd,beg->szPWD);
+		LPUSERINFO pTemp = *beg;
+		_tcscpy(tp.user.szUserName,pTemp->szName);
+		_tcscpy(tp.user.szUserPwd,pTemp->szPWD);
 
 		m_pSinaSvr->AddTask(&tp);
-		USERINFO ui = m_vtUserList.at(0);
-		SetUserStatus(&ui,SINA_LOGIN_LOGGING);
+		LPUSERINFO ui = m_vtUserList.at(0);
+		SetUserStatus(ui,SINA_LOGIN_LOGGING);
 		beg ++;
 	}
 	else

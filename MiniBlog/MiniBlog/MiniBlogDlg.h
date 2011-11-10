@@ -31,7 +31,7 @@
 
 
 
-
+typedef std::vector<LPUSERINFO> VCTLPUSERINFO;
 
 // CMiniBlogDlg dialog
 class CMiniBlogDlg : public CDialogEx
@@ -115,8 +115,8 @@ private:
 	CGridCtrl	m_Grid;
 	TASK_PARAM  m_TaskParam;
 	TCHAR		m_szClientID[33];//MD5:32BITS
-	std::deque<USERINFO> m_vtUserList;
-	std::deque<USERINFO> m_vtSmartLogonList;
+	VCTLPUSERINFO m_vtUserList;
+	VCTLPUSERINFO m_vtSmartLogonList;
 	USERINFO  m_CurUser;
 	BOOL      m_bCheckDone;
 	CToolTipCtrl   m_ToolTip; 
