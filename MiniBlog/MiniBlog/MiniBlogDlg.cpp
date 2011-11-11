@@ -794,6 +794,9 @@ void CMiniBlogDlg::OnClose()
 }
 void CMiniBlogDlg::AddToSmartList(USERINFO *pui)
 {
+	if(!pui)
+		return;
+
 	VCTLPUSERINFO::iterator end = m_vtSmartLogonList.end();
 	VCTLPUSERINFO::iterator beg = m_vtSmartLogonList.begin();
 	BOOL bInList = FALSE;
@@ -833,8 +836,7 @@ void CMiniBlogDlg::AutoSwitchSID()
 	m_pSinaSvr->AddTask(&tp);
 	
 }
-
-void CMiniBlogDlg::SetUserStatus(USERINFO *pui,int nStatus)
+void CMiniBlogDlg::UpdateGridStatus(USERINFO *pui,int nStatus)
 {
 	if (!pui)
 		return;
@@ -878,6 +880,13 @@ void CMiniBlogDlg::SetUserStatus(USERINFO *pui,int nStatus)
 		}
 	}
 
+
+}
+void CMiniBlogDlg::SetUserStatus(USERINFO *pui,int nStatus)
+{
+	if (!pui)
+		return;
+
 	VCTLPUSERINFO::iterator end = m_vtUserList.end();
 	VCTLPUSERINFO::iterator beg = m_vtUserList.begin();
 	for (  ; beg != end ; beg++ ) 
@@ -890,6 +899,7 @@ void CMiniBlogDlg::SetUserStatus(USERINFO *pui,int nStatus)
 		}
 	}
 
+	UpdateGridStatus(pui,nStatus);
 	return ;
 
 
@@ -982,8 +992,11 @@ LRESULT CMiniBlogDlg::OnLoginStatus(WPARAM wParam, LPARAM lParam)
 	case  SINA_LOGIN_SUCCESS:
 		{
 			// post to server
+			LPUSERINFO lpUI = NULL;
+			lpUI = GetUserPtr(&ui);
 			PostSInfo(&ui);
-			AddToSmartList(&ui);
+			AddToSmartList(lpUI);
+			AddUserToDB(lpUI);	
 		}
 		break;
 	case SINA_PWD_ERROR:
@@ -995,17 +1008,12 @@ LRESULT CMiniBlogDlg::OnLoginStatus(WPARAM wParam, LPARAM lParam)
 		}
 		break;
 	default:
-		SetUserStatus(&ui,nCode);
 		break;
 
 	}
 	SetUserStatus(&ui,nCode);
 	EnableAddUser(TRUE);
 	ResetUerWND();
-	if (nCode == SINA_LOGIN_SUCCESS)
-	{
-		AddUserToDB(&ui);
-	}
 	if (!m_bCheckDone)
 		CheckNextSID();
 	return 0;
@@ -1115,8 +1123,8 @@ void CMiniBlogDlg::CheckNextSID()
 		_tcscpy(tp.user.szUserPwd,pTemp->szPWD);
 
 		m_pSinaSvr->AddTask(&tp);
-		LPUSERINFO ui = m_vtUserList.at(0);
-		SetUserStatus(ui,SINA_LOGIN_LOGGING);
+		LPUSERINFO pui = m_vtUserList.at(0);
+		SetUserStatus(pui,SINA_LOGIN_LOGGING);
 		beg ++;
 	}
 	else
@@ -1141,12 +1149,72 @@ void CMiniBlogDlg::OnBnClickedButtonTest2()
 }
 
 
-void CMiniBlogDlg::OnBnClickedButtonTest3()
+LPUSERINFO CMiniBlogDlg::GetUserPtr(LPUSERINFO lpUI)
 {
-	// TODO: Add your control notification handler code here
+	if (!lpUI)
+		return NULL;
+
+	if (!lpUI->szName 
+		||!lpUI->szUID
+		||!lpUI->szPWD
+		)
+		return NULL;
+
+	LPUSERINFO pTemp = NULL;
+	VCTLPUSERINFO::iterator end = m_vtUserList.end();
+	VCTLPUSERINFO::iterator beg = m_vtUserList.begin();
+	BOOL bInside = FALSE;
+	for (  ; beg != end ; beg++ ) 
+	{ 
+		pTemp = *beg;
+		if (pTemp && _tcsicmp(pTemp->szName,lpUI->szName) == 0)
+		{
+			bInside = TRUE;
+			break;
+		}
+	}
+	if (!bInside)
+	{
+		LPUSERINFO pUI = new USERINFO;
+		pTemp = pUI;
+		memcpy(pUI,lpUI,sizeof(USERINFO));
+		m_vtUserList.push_back(lpUI);
+	}
+
+	return pTemp;
+
+
 }
 
+void CMiniBlogDlg::AddToSUerList(LPUSERINFO lpUI)
+{
+	if (!lpUI)
+		return;
+	
+	if (!lpUI->szName 
+		||!lpUI->szUID
+		||!lpUI->szPWD
+		)
+		return;
+	
+	VCTLPUSERINFO::iterator end = m_vtUserList.end();
+	VCTLPUSERINFO::iterator beg = m_vtUserList.begin();
+	BOOL bInside = FALSE;
+	for (  ; beg != end ; beg++ ) 
+	{ 
+		LPUSERINFO pTemp = *beg;
+		if (pTemp && _tcsicmp(pTemp->szName,lpUI->szName) == 0)
+		{
+			bInside = TRUE;
+			break;
+		}
+	}
 
+	if (!bInside)
+		m_vtUserList.push_back(lpUI);
+	
+	return;
+}
 
 
 void CMiniBlogDlg::OnMenuAbout()

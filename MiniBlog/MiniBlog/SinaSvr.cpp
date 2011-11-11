@@ -439,7 +439,7 @@ HRESULT CSinaSvr::CheckLoginStatus(CString URL)
 	PostMessage(m_hWnd,WM_USER_LOGIN_STATUS,(WPARAM)&m_uiCurUserInfo,SINA_NONE);
 
 	
-#if 1
+#if 0
 
 
 	CString strHtml;

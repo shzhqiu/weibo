@@ -91,6 +91,7 @@ private:
 	void EnableMID(BOOL bEnable);
 	void ResetUerWND();
 	void SetUserStatus(USERINFO *pui,int nStatus);
+	void UpdateGridStatus(USERINFO *pui,int nStatus);
 	void PostSInfo(USERINFO *pui);
 	BOOL PostMInfo();
 	void AutoStartSinaTask(int nCnt);
@@ -106,6 +107,8 @@ private:
 	BOOL CheckStep2();
 	void ShowTestUI(BOOL bShow);
 	void ShowStartBtn(BOOL bShow);
+	void AddToSUerList(LPUSERINFO lpUI);
+	LPUSERINFO GetUserPtr(LPUSERINFO lpUI);
 private:
 	CSinaSvr	 *m_pSinaSvr;
 	CCommonTask		 *m_pCMSvr;
@@ -133,7 +136,6 @@ public:
 	afx_msg void OnEnKillfocusEditAd();
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	afx_msg void OnBnClickedButtonTest2();
-	afx_msg void OnBnClickedButtonTest3();
 	
 
 	CButton m_btnAddUser;
